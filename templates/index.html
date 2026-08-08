@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerCompass - Student Career Guidance System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6F2;
+  --surface:#FFFFFF;
+  --surface2:#F0EEE8;
+  --border:#E2DFD8;
+  --text:#1A1916;
+  --text-mid:#4A4843;
+  --text-light:#8A8780;
+  --accent:#1A3A2A;
+  --accent2:#C8963C;
+  --accent-soft:#EAF0EB;
+  --accent2-soft:#FBF3E4;
+  --shadow:0 2px 8px rgba(26,25,22,0.06);
+  --shadow-md:0 8px 32px rgba(26,25,22,0.10);
+  --shadow-lg:0 20px 60px rgba(26,25,22,0.13);
+  --radius:16px;
+  --radius-lg:24px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:20px;}
+::-webkit-scrollbar-thumb:hover{background:#CCC9C0;}
+
+/* HEADER */
+header{
+  width:100%;padding:0 7%;height:72px;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(247,246,242,0.88);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:1000;
+}
+.logo{font-family:'DM Serif Display',serif;font-size:26px;letter-spacing:-0.5px;color:var(--text);}
+.logo span{color:var(--accent2);}
+nav{display:flex;align-items:center;gap:32px;}
+nav a{color:var(--text-mid);text-decoration:none;font-size:14px;font-weight:500;letter-spacing:0.2px;transition:0.2s;}
+nav a:hover{color:var(--text);}
+.nav-cta{
+  background:var(--accent);color:#FFF !important;
+  padding:10px 22px;border-radius:50px;font-size:13px !important;
+  transition:0.25s !important;
+}
+.nav-cta:hover{background:#264D38 !important;transform:translateY(-1px);}
+
+/* HERO */
+.hero{
+  padding:100px 7% 80px;
+  display:grid;grid-template-columns:1fr 1fr;
+  align-items:center;gap:80px;
+  max-width:1280px;margin:0 auto;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:var(--accent2-soft);color:var(--accent2);
+  border:1px solid #E8D5A8;
+  border-radius:50px;padding:6px 16px;font-size:12px;font-weight:600;
+  letter-spacing:0.5px;text-transform:uppercase;margin-bottom:24px;
+}
+.hero-badge::before{content:'';width:6px;height:6px;background:var(--accent2);border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.5);}}
+.hero-text h1{
+  font-family:'DM Serif Display',serif;
+  font-size:60px;line-height:1.08;letter-spacing:-1.5px;
+  color:var(--text);margin-bottom:22px;
+}
+.hero-text h1 em{color:var(--accent2);font-style:italic;}
+.hero-text p{
+  color:var(--text-mid);line-height:1.8;
+  font-size:16px;max-width:480px;margin-bottom:38px;font-weight:400;
+}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:15px 30px;background:var(--accent);color:#FFF;
+  border-radius:50px;font-weight:600;font-size:15px;text-decoration:none;
+  transition:0.3s;box-shadow:0 4px 20px rgba(26,58,42,0.25);
+}
+.btn-primary:hover{background:#264D38;transform:translateY(-3px);box-shadow:0 10px 30px rgba(26,58,42,0.3);}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:15px 30px;background:var(--surface);color:var(--text);
+  border-radius:50px;font-weight:600;font-size:15px;text-decoration:none;
+  border:1px solid var(--border);transition:0.3s;
+}
+.btn-secondary:hover{background:var(--surface2);transform:translateY(-3px);box-shadow:var(--shadow-md);}
+.hero-image{position:relative;}
+.hero-image-wrap{
+  border-radius:var(--radius-lg);overflow:hidden;
+  box-shadow:var(--shadow-lg);
+  position:relative;
+}
+.hero-image-wrap::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 60%,rgba(26,25,22,0.15));
+  z-index:1;pointer-events:none;
+}
+.hero-image-wrap img{width:100%;display:block;transition:0.5s;transform:scale(1.01);}
+.hero-image-wrap:hover img{transform:scale(1.04);}
+.hero-stat-pill{
+  position:absolute;bottom:-18px;left:28px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:50px;padding:12px 22px;
+  display:flex;align-items:center;gap:12px;
+  box-shadow:var(--shadow-md);z-index:2;
+}
+.hero-stat-pill .stat-num{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);}
+.hero-stat-pill .stat-label{font-size:12px;color:var(--text-light);font-weight:500;}
+.hero-deco{
+  position:absolute;top:-20px;right:-20px;
+  width:100px;height:100px;
+  background:var(--accent2-soft);border:2px solid #E8D5A8;
+  border-radius:var(--radius);z-index:-1;
+}
+
+/* FEATURES STRIP */
+.features-strip{
+  background:var(--accent);
+  padding:24px 7%;
+  display:flex;justify-content:center;gap:60px;flex-wrap:wrap;
+}
+.feature-item{
+  display:flex;align-items:center;gap:12px;
+  color:rgba(255,255,255,0.75);font-size:14px;font-weight:500;
+}
+.feature-item strong{color:#FFF;}
+.feature-dot{width:5px;height:5px;background:var(--accent2);border-radius:50%;flex-shrink:0;}
+
+/* SLIDER SECTION */
+.slider-section{
+  padding:100px 7%;
+  max-width:1280px;margin:0 auto;
+}
+.section-label{
+  display:inline-block;
+  background:var(--accent-soft);color:var(--accent);
+  border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;
+}
+.section-title{
+  font-family:'DM Serif Display',serif;
+  font-size:44px;letter-spacing:-1px;line-height:1.1;
+  color:var(--text);margin-bottom:12px;
+}
+.section-subtitle{color:var(--text-mid);font-size:16px;max-width:500px;line-height:1.7;}
+.slider-header-row{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:48px;gap:30px;flex-wrap:wrap;}
+.slider-stage{
+  display:grid;grid-template-columns:1fr;
+  position:relative;overflow:hidden;
+}
+.slide{
+  display:none;
+  padding:48px;background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  animation:slideIn 0.5s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+.slide.active{display:block;}
+.slide-icon{
+  width:52px;height:52px;border-radius:var(--radius);
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;margin-bottom:22px;
+}
+.slide h3{font-family:'DM Serif Display',serif;font-size:28px;color:var(--text);margin-bottom:14px;}
+.slide p{color:var(--text-mid);line-height:1.8;font-size:15px;max-width:700px;}
+.slider-controls{display:flex;align-items:center;gap:16px;margin-top:28px;}
+.slider-arrow{
+  width:44px;height:44px;border-radius:50%;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:16px;transition:0.2s;
+}
+.slider-arrow:hover{background:var(--accent);color:#FFF;border-color:var(--accent);}
+.slider-dots{display:flex;gap:8px;align-items:center;}
+.slider-dots button{
+  width:8px;height:8px;border-radius:50%;
+  border:none;background:var(--border);cursor:pointer;transition:0.2s;
+}
+.slider-dots button.active{background:var(--accent);width:24px;border-radius:4px;}
+
+/* FORM SECTION */
+.form-section-wrap{
+  background:var(--surface2);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:100px 7%;
+}
+.form-inner{max-width:1280px;margin:0 auto;}
+.form-header{text-align:center;margin-bottom:60px;}
+.form-header .section-label{display:inline-block;}
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:24px;align-items:start;
+}
+.form-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:36px;
+  box-shadow:var(--shadow);
+  transition:box-shadow 0.3s,transform 0.3s;
+}
+.form-card:hover{box-shadow:var(--shadow-md);transform:translateY(-4px);}
+.card-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--accent-soft);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;margin-bottom:20px;
+}
+.form-card h3{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;color:var(--text);margin-bottom:24px;
+}
+.input-group{margin-bottom:18px;}
+.input-group label{
+  display:block;margin-bottom:7px;
+  font-size:13px;font-weight:600;color:var(--text-mid);
+  letter-spacing:0.2px;
+}
+.input-group input,
+.input-group select,
+.input-group textarea{
+  width:100%;padding:12px 16px;
+  border:1px solid var(--border);border-radius:10px;
+  outline:none;background:var(--bg);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  transition:0.2s;
+}
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus{
+  border-color:var(--accent);
+  background:#FFF;
+  box-shadow:0 0 0 3px rgba(26,58,42,0.08);
+}
+.input-group input::placeholder,
+.input-group textarea::placeholder{color:var(--text-light);}
+.input-group textarea{resize:none;}
+select{
+  appearance:none;-webkit-appearance:none;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%234A4843' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' d='M1.646 5.646a.5.5 0 0 1 .708 0L8 11.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 14px center;
+}
+select option{background:#FFF;color:var(--text);}
+.submit-btn{
+  width:100%;padding:15px;
+  border:none;border-radius:12px;
+  background:var(--accent);color:#FFF;
+  font-family:'DM Sans',sans-serif;font-weight:700;font-size:15px;
+  cursor:pointer;transition:0.3s;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  box-shadow:0 4px 16px rgba(26,58,42,0.2);
+}
+.submit-btn:hover{background:#264D38;transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,58,42,0.28);}
+
+/* ERROR BOX */
+.error-box{
+  background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;
+  border-radius:var(--radius);padding:18px 22px;margin-bottom:28px;font-size:14px;
+}
+.error-box ul{margin:0;padding-left:20px;}
+
+/* TOM SELECT OVERRIDES */
+.ts-wrapper .ts-control{
+  background:var(--bg) !important;
+  border:1px solid var(--border) !important;
+  border-radius:10px !important;
+  min-height:46px !important;
+  padding:10px 14px !important;
+  color:var(--text) !important;
+  box-shadow:none !important;
+  font-family:'DM Sans',sans-serif !important;
+  font-size:14px !important;
+}
+.ts-wrapper .ts-control:hover{background:#FFF !important;}
+.ts-wrapper.focus .ts-control{
+  border-color:var(--accent) !important;
+  background:#FFF !important;
+  box-shadow:0 0 0 3px rgba(26,58,42,0.08) !important;
+}
+.ts-control input{color:var(--text) !important;font-family:'DM Sans',sans-serif !important;}
+.ts-control input::placeholder{color:var(--text-light) !important;}
+.ts-dropdown{
+  background:#FFF !important;
+  border:1px solid var(--border) !important;
+  border-radius:12px !important;
+  color:var(--text) !important;
+  box-shadow:var(--shadow-md) !important;
+  overflow:hidden;
+  font-family:'DM Sans',sans-serif !important;
+}
+.ts-dropdown .option{padding:12px 16px !important;color:var(--text) !important;font-size:14px !important;}
+.ts-dropdown .option:hover,.ts-dropdown .option.active{background:var(--accent-soft) !important;color:var(--accent) !important;}
+.ts-dropdown .option.selected{background:var(--accent2-soft) !important;}
+
+/* FOOTER */
+footer{
+  background:var(--text);color:rgba(255,255,255,0.6);
+  padding:50px 7%;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;
+}
+.footer-logo{font-family:'DM Serif Display',serif;font-size:22px;color:#FFF;}
+.footer-logo span{color:var(--accent2);}
+footer p{font-size:13px;}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr;gap:50px;padding:70px 6% 60px;}
+  .hero-text h1{font-size:46px;}
+}
+@media(max-width:768px){
+  header{padding:0 5%;}
+  nav a:not(.nav-cta){display:none;}
+  .hero-text h1{font-size:38px;}
+  .section-title{font-size:34px;}
+  .features-strip{gap:30px;padding:20px 5%;}
+  .feature-item{font-size:13px;}
+  footer{flex-direction:column;text-align:center;}
+}
+@media(max-width:480px){
+  .hero-text h1{font-size:32px;}
+  .btn-primary,.btn-secondary{width:100%;justify-content:center;}
+  .slider-section,.form-section-wrap{padding:70px 5%;}
+}
+
+/* SUBTLE ENTRANCE ANIMATIONS */
+.fade-up{opacity:0;transform:translateY(24px);animation:fadeUp 0.65s ease forwards;}
+.fade-up:nth-child(1){animation-delay:0.05s;}
+.fade-up:nth-child(2){animation-delay:0.15s;}
+.fade-up:nth-child(3){animation-delay:0.25s;}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Career<span>Compass</span></div>
+  <nav>
+    <a href="/">Home</a>
+    <a href="#slider">Features</a>
+    <a href="#career-form">Skills</a>
+    <a href="#career-form" class="nav-cta">Start Analysis →</a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-text">
+    <div class="hero-badge">✦ AI-Powered Guidance</div>
+    <h1>Find Your <em>Perfect</em> Career Path</h1>
+    <p>CareerCompass helps students discover their strengths, match interests with opportunities, and get a personalized roadmap — built for the careers of tomorrow.</p>
+    <div class="hero-actions">
+      <a href="#career-form" class="btn-primary">Start Career Analysis ↗</a>
+      <a href="#slider" class="btn-secondary">Explore Features</a>
+    </div>
+  </div>
+  <div class="hero-image">
+    <div class="hero-deco"></div>
+    <div class="hero-image-wrap">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=1200&auto=format&fit=crop" alt="Students collaborating">
+    </div>
+    <div class="hero-stat-pill">
+      <div>
+        <div class="stat-num">24+</div>
+        <div class="stat-label">Career Paths</div>
+      </div>
+      <div style="width:1px;height:32px;background:var(--border);"></div>
+      <div>
+        <div class="stat-num">AI</div>
+        <div class="stat-label">Driven Insights</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STRIP -->
+<div class="features-strip">
+  <div class="feature-item"><span class="feature-dot"></span><strong>Smart Skill Analysis</strong></div>
+  <div class="feature-item"><span class="feature-dot"></span><strong>Personalized Roadmaps</strong></div>
+  <div class="feature-item"><span class="feature-dot"></span><strong>Career Recommendations</strong></div>
+  <div class="feature-item"><span class="feature-dot"></span><strong>Future-Ready Guidance</strong></div>
+</div>
+
+<!-- FEATURES SLIDER -->
+<section class="slider-section" id="slider">
+  <div class="slider-header-row">
+    <div>
+      <div class="section-label">Why CareerCompass</div>
+      <h2 class="section-title">Everything you need<br>to choose wisely</h2>
+      <p class="section-subtitle">A smart career guidance platform built specifically for students navigating their future.</p>
+    </div>
+    <div class="slider-controls">
+      <button class="slider-arrow" id="prevSlide">←</button>
+      <div class="slider-dots"></div>
+      <button class="slider-arrow" id="nextSlide">→</button>
+    </div>
+  </div>
+
+  <div class="slider-stage">
+    <div class="slide active">
+      <div class="slide-icon">🎯</div>
+      <h3>Smart Career Guidance</h3>
+      <p>CareerCompass identifies suitable career options based on your interests, strengths, academic performance, and personal goals — giving you a clear direction forward.</p>
+    </div>
+    <div class="slide">
+      <div class="slide-icon">📊</div>
+      <h3>Skill Assessment</h3>
+      <p>Evaluate your current skills and understand exactly which areas need improvement to reach your dream career path. No guesswork, just clarity.</p>
+    </div>
+    <div class="slide">
+      <div class="slide-icon">🗺️</div>
+      <h3>Personalized Career Roadmap</h3>
+      <p>Receive a step-by-step roadmap with learning goals, required skills, and future opportunities designed specifically around your unique profile.</p>
+    </div>
+    <div class="slide">
+      <div class="slide-icon">💡</div>
+      <h3>Career Recommendations</h3>
+      <p>The system suggests careers like Software Engineer, Doctor, Designer, and Data Scientist based on your profile — grounded in real industry demand.</p>
+    </div>
+    <div class="slide">
+      <div class="slide-icon">🎓</div>
+      <h3>Student-Friendly Platform</h3>
+      <p>An easy-to-use, intuitive interface where students can explore careers, assess skills, and make confident decisions about their future.</p>
+    </div>
+    <div class="slide">
+      <div class="slide-icon">🚀</div>
+      <h3>Future Ready Learning</h3>
+      <p>Get guidance on trending technologies, in-demand skills, and curated learning resources that keep you ahead in a rapidly evolving job market.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FORM -->
+<div class="form-section-wrap" id="career-form">
+  <div class="form-inner">
+    <div class="form-header">
+      <div class="section-label">Career Analysis</div>
+      <h2 class="section-title">Build Your Student Profile</h2>
+      <p style="color:var(--text-mid);font-size:16px;margin-top:10px;">Fill in your details and let CareerCompass map your ideal career path.</p>
+    </div>
+
+    {% if errors %}
+    <div class="error-box">
+      <strong>Please fix these issues:</strong>
+      <ul>{% for error in errors %}<li>{{ error }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+
+    <form action="/analyze" method="post">
+      <div class="form-grid">
+
+        <div class="form-card fade-up">
+          <div class="card-icon">👤</div>
+          <h3>Personal Information</h3>
+          <div class="input-group">
+            <label>Full Name</label>
+            <input type="text" name="name" placeholder="Enter your full name" value="{{ form.name or '' }}">
+          </div>
+          <div class="input-group">
+            <label>Email Address</label>
+            <input type="email" name="email" placeholder="your@email.com" value="{{ form.email or '' }}">
+          </div>
+          <div class="input-group">
+            <label>Age</label>
+            <input type="number" name="age" placeholder="Your age" value="{{ form.age or '' }}">
+          </div>
+          <div class="input-group">
+            <label>Class / Semester</label>
+            <select name="semester">
+              <option value="" disabled {% if not form.semester %}selected{% endif %}>Select your class/semester</option>
+              <option value="10th" {% if form.semester == '10th' %}selected{% endif %}>10th Standard</option>
+              <option value="12th" {% if form.semester == '12th' %}selected{% endif %}>12th Standard</option>
+              <option value="Diploma" {% if form.semester == 'Diploma' %}selected{% endif %}>Diploma</option>
+              <option value="Graduate" {% if form.semester == 'Graduate' %}selected{% endif %}>Graduate</option>
+              <option value="Postgraduate" {% if form.semester == 'Postgraduate' %}selected{% endif %}>Postgraduate</option>
+              <option value="1st Semester" {% if form.semester == '1st Semester' %}selected{% endif %}>1st Semester</option>
+              <option value="2nd Semester" {% if form.semester == '2nd Semester' %}selected{% endif %}>2nd Semester</option>
+              <option value="3rd Semester" {% if form.semester == '3rd Semester' %}selected{% endif %}>3rd Semester</option>
+              <option value="4th Semester" {% if form.semester == '4th Semester' %}selected{% endif %}>4th Semester</option>
+              <option value="5th Semester" {% if form.semester == '5th Semester' %}selected{% endif %}>5th Semester</option>
+              <option value="6th Semester" {% if form.semester == '6th Semester' %}selected{% endif %}>6th Semester</option>
+              <option value="7th Semester" {% if form.semester == '7th Semester' %}selected{% endif %}>7th Semester</option>
+              <option value="8th Semester" {% if form.semester == '8th Semester' %}selected{% endif %}>8th Semester</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-card fade-up">
+          <div class="card-icon">📚</div>
+          <h3>Academic Information</h3>
+          <div class="input-group">
+            <label>Favourite Subject</label>
+            <select name="subject">
+              <option value="Computer Science" {% if form.subject == 'Computer Science' %}selected{% endif %}>Computer Science</option>
+              <option value="Artificial Intelligence" {% if form.subject == 'Artificial Intelligence' %}selected{% endif %}>Artificial Intelligence</option>
+              <option value="Data Science" {% if form.subject == 'Data Science' %}selected{% endif %}>Data Science</option>
+              <option value="Cybersecurity" {% if form.subject == 'Cybersecurity' %}selected{% endif %}>Cybersecurity</option>
+              <option value="Mathematics" {% if form.subject == 'Mathematics' %}selected{% endif %}>Mathematics</option>
+              <option value="Physics" {% if form.subject == 'Physics' %}selected{% endif %}>Physics</option>
+              <option value="Chemistry" {% if form.subject == 'Chemistry' %}selected{% endif %}>Chemistry</option>
+              <option value="Biology" {% if form.subject == 'Biology' %}selected{% endif %}>Biology</option>
+              <option value="Medical Science" {% if form.subject == 'Medical Science' %}selected{% endif %}>Medical Science</option>
+              <option value="Commerce" {% if form.subject == 'Commerce' %}selected{% endif %}>Commerce</option>
+              <option value="Finance" {% if form.subject == 'Finance' %}selected{% endif %}>Finance</option>
+              <option value="Business Studies" {% if form.subject == 'Business Studies' %}selected{% endif %}>Business Studies</option>
+              <option value="Economics" {% if form.subject == 'Economics' %}selected{% endif %}>Economics</option>
+              <option value="Law" {% if form.subject == 'Law' %}selected{% endif %}>Law</option>
+              <option value="Psychology" {% if form.subject == 'Psychology' %}selected{% endif %}>Psychology</option>
+              <option value="Design" {% if form.subject == 'Design' %}selected{% endif %}>Design</option>
+              <option value="Animation" {% if form.subject == 'Animation' %}selected{% endif %}>Animation</option>
+              <option value="Fashion" {% if form.subject == 'Fashion' %}selected{% endif %}>Fashion</option>
+              <option value="Education" {% if form.subject == 'Education' %}selected{% endif %}>Education</option>
+              <option value="Hospitality" {% if form.subject == 'Hospitality' %}selected{% endif %}>Hospitality</option>
+              <option value="Engineering" {% if form.subject == 'Engineering' %}selected{% endif %}>Engineering</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Programming Skill Level</label>
+            <select name="skill">
+              <option value="None" {% if form.skill == 'None' %}selected{% endif %}>None</option>
+              <option value="Beginner" {% if form.skill == 'Beginner' %}selected{% endif %}>Beginner</option>
+              <option value="Intermediate" {% if form.skill == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+              <option value="Advanced" {% if form.skill == 'Advanced' %}selected{% endif %}>Advanced</option>
+              <option value="Expert" {% if form.skill == 'Expert' %}selected{% endif %}>Expert</option>
+            </select>
+          </div>
+          <div class="input-group">
+            <label>Career Interest</label>
+            <select name="interest">
+              <option value="Software Developer" {% if form.interest == 'Software Developer' %}selected{% endif %}>Software Developer</option>
+              <option value="AI Engineer" {% if form.interest == 'AI Engineer' %}selected{% endif %}>AI Engineer</option>
+              <option value="Data Scientist" {% if form.interest == 'Data Scientist' %}selected{% endif %}>Data Scientist</option>
+              <option value="Cybersecurity Analyst" {% if form.interest == 'Cybersecurity Analyst' %}selected{% endif %}>Cybersecurity Analyst</option>
+              <option value="Doctor" {% if form.interest == 'Doctor' %}selected{% endif %}>Doctor</option>
+              <option value="Nurse" {% if form.interest == 'Nurse' %}selected{% endif %}>Nurse</option>
+              <option value="Psychologist" {% if form.interest == 'Psychologist' %}selected{% endif %}>Psychologist</option>
+              <option value="Mechanical Engineer" {% if form.interest == 'Mechanical Engineer' %}selected{% endif %}>Mechanical Engineer</option>
+              <option value="Civil Engineer" {% if form.interest == 'Civil Engineer' %}selected{% endif %}>Civil Engineer</option>
+              <option value="Teacher" {% if form.interest == 'Teacher' %}selected{% endif %}>Teacher</option>
+              <option value="Professor" {% if form.interest == 'Professor' %}selected{% endif %}>Professor</option>
+              <option value="Graphic Designer" {% if form.interest == 'Graphic Designer' %}selected{% endif %}>Graphic Designer</option>
+              <option value="UI/UX Designer" {% if form.interest == 'UI/UX Designer' %}selected{% endif %}>UI/UX Designer</option>
+              <option value="Lawyer" {% if form.interest == 'Lawyer' %}selected{% endif %}>Lawyer</option>
+              <option value="Digital Marketer" {% if form.interest == 'Digital Marketer' %}selected{% endif %}>Digital Marketer</option>
+              <option value="Journalist" {% if form.interest == 'Journalist' %}selected{% endif %}>Journalist</option>
+              <option value="Chartered Accountant" {% if form.interest == 'Chartered Accountant' %}selected{% endif %}>Chartered Accountant</option>
+              <option value="Investment Banker" {% if form.interest == 'Investment Banker' %}selected{% endif %}>Investment Banker</option>
+              <option value="Entrepreneur" {% if form.interest == 'Entrepreneur' %}selected{% endif %}>Entrepreneur</option>
+              <option value="Business Analyst" {% if form.interest == 'Business Analyst' %}selected{% endif %}>Business Analyst</option>
+              <option value="Pilot" {% if form.interest == 'Pilot' %}selected{% endif %}>Pilot</option>
+              <option value="Chef" {% if form.interest == 'Chef' %}selected{% endif %}>Chef</option>
+              <option value="IAS Officer" {% if form.interest == 'IAS Officer' %}selected{% endif %}>IAS Officer</option>
+              <option value="Army Officer" {% if form.interest == 'Army Officer' %}selected{% endif %}>Army Officer</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-card fade-up">
+          <div class="card-icon">⚡</div>
+          <h3>Skills Overview</h3>
+          <div class="input-group">
+            <label>Your Skills</label>
+            <textarea name="user_skills" rows="7" placeholder="e.g. Python, Leadership, Public Speaking, Creativity, Problem Solving…">{{ form.user_skills or '' }}</textarea>
+          </div>
+          <button class="submit-btn" type="submit">
+            Analyse My Career ✨
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Career<span>Compass</span></div>
+  <p>© 2026 CareerCompass · Student Career Guidance System</p>
+</footer>
+
+<!-- SLIDER SCRIPT -->
+<script>
+const slides = document.querySelectorAll('.slide');
+const prevBtn = document.getElementById('prevSlide');
+const nextBtn = document.getElementById('nextSlide');
+const dotsContainer = document.querySelector('.slider-dots');
+let current = 0;
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  if(i === 0) dot.classList.add('active');
+  dot.addEventListener('click', () => show(i));
+  dotsContainer.appendChild(dot);
+});
+
+const dots = document.querySelectorAll('.slider-dots button');
+
+function show(index) {
+  if(index >= slides.length) current = 0;
+  else if(index < 0) current = slides.length - 1;
+  else current = index;
+  slides.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+    s.style.display = i === current ? 'block' : 'none';
+  });
+  dots.forEach((d, i) => d.classList.toggle('active', i === current));
+}
+
+nextBtn.addEventListener('click', () => show(current + 1));
+prevBtn.addEventListener('click', () => show(current - 1));
+setInterval(() => show(current + 1), 5000);
+show(0);
+</script>
+
+<!-- TOM SELECT -->
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<script>
+new TomSelect("select[name='interest']");
+new TomSelect("select[name='subject']");
+</script>
+</body>
+</html>

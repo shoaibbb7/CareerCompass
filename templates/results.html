@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerCompass – Your Results</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F7F6F2;
+  --surface:#FFFFFF;
+  --surface2:#F0EEE8;
+  --border:#E2DFD8;
+  --text:#1A1916;
+  --text-mid:#4A4843;
+  --text-light:#8A8780;
+  --accent:#1A3A2A;
+  --accent2:#C8963C;
+  --accent-soft:#EAF0EB;
+  --accent2-soft:#FBF3E4;
+  --shadow:0 2px 8px rgba(26,25,22,0.06);
+  --shadow-md:0 8px 32px rgba(26,25,22,0.10);
+  --shadow-lg:0 20px 60px rgba(26,25,22,0.13);
+  --radius:16px;
+  --radius-lg:24px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:8px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:20px;}
+
+/* HEADER */
+header{
+  width:100%;padding:0 7%;height:72px;
+  display:flex;justify-content:space-between;align-items:center;
+  background:rgba(247,246,242,0.88);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:1000;
+}
+.logo{font-family:'DM Serif Display',serif;font-size:26px;letter-spacing:-0.5px;color:var(--text);}
+.logo span{color:var(--accent2);}
+nav{display:flex;align-items:center;gap:24px;}
+nav a{
+  color:var(--text-mid);text-decoration:none;font-size:14px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 18px;border-radius:50px;border:1px solid var(--border);
+  background:var(--surface);transition:0.2s;
+}
+nav a:hover{background:var(--surface2);color:var(--text);}
+
+/* LOADING OVERLAY */
+.loading-overlay{
+  position:fixed;inset:0;
+  background:rgba(247,246,242,0.96);
+  backdrop-filter:blur(20px);
+  z-index:9999;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+}
+.spinner{
+  width:52px;height:52px;
+  border:3px solid var(--border);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 0.85s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-text{font-family:'DM Serif Display',serif;font-size:26px;color:var(--text);}
+.loading-sub{font-size:14px;color:var(--text-light);font-weight:400;}
+.loading-dots span{
+  display:inline-block;width:8px;height:8px;border-radius:50%;
+  background:var(--accent2);margin:0 3px;
+  animation:bounce 1.2s infinite;
+}
+.loading-dots span:nth-child(2){animation-delay:0.2s;}
+.loading-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes bounce{0%,80%,100%{transform:scale(0.7);opacity:0.5;}40%{transform:scale(1.1);opacity:1;}}
+
+/* ── MODE TABS ───────────────────────────────────────── */
+.mode-tab-bar{
+  display:flex;gap:0;padding:0 7%;
+  background:var(--surface);
+  border-bottom:2px solid var(--border);
+  position:sticky;top:72px;z-index:900;
+  overflow-x:auto;
+}
+.mode-tab{
+  padding:18px 28px;font-size:14px;font-weight:600;cursor:pointer;
+  border:none;background:none;color:var(--text-mid);
+  border-bottom:3px solid transparent;margin-bottom:-2px;
+  display:inline-flex;align-items:center;gap:8px;
+  white-space:nowrap;transition:0.2s;font-family:'DM Sans',sans-serif;
+}
+.mode-tab:hover{color:var(--text);background:var(--bg);}
+.mode-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.mode-tab .tab-badge{
+  background:var(--accent-soft);color:var(--accent);
+  border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;
+}
+.mode-tab.active .tab-badge{background:var(--accent);color:#fff;}
+
+/* HERO RESULT */
+.hero-result{
+  padding:64px 7% 48px;
+  max-width:1280px;margin:0 auto;
+  display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:30px;
+}
+.hero-greeting .label{
+  display:inline-block;
+  background:var(--accent2-soft);color:var(--accent2);
+  border:1px solid #E8D5A8;
+  border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:16px;
+}
+.hero-greeting h1{
+  font-family:'DM Serif Display',serif;
+  font-size:52px;letter-spacing:-1.5px;line-height:1.05;color:var(--text);
+}
+.hero-greeting h1 em{color:var(--accent2);font-style:italic;}
+.hero-greeting p{color:var(--text-mid);font-size:15px;margin-top:12px;}
+.hero-meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px;}
+.meta-chip{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:50px;padding:8px 18px;font-size:13px;font-weight:500;color:var(--text-mid);
+}
+.meta-chip strong{color:var(--text);}
+
+/* SUMMARY BOX */
+.summary-wrap{padding:0 7% 48px;max-width:1280px;margin:0 auto;}
+.summary-box{
+  background:var(--accent);color:rgba(255,255,255,0.88);
+  border-radius:var(--radius-lg);padding:36px 40px;
+  font-size:15px;line-height:1.85;
+  position:relative;overflow:hidden;
+}
+.summary-box::before{
+  content:'"';
+  font-family:'DM Serif Display',serif;
+  font-size:180px;line-height:1;color:rgba(255,255,255,0.06);
+  position:absolute;top:-20px;right:30px;pointer-events:none;
+}
+.summary-label{
+  font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:rgba(255,255,255,0.5);margin-bottom:14px;
+}
+
+/* SECTION LAYOUT */
+.section-wrap{padding:0 7% 80px;max-width:1280px;margin:0 auto;}
+.section-head{margin-bottom:36px;}
+.section-label{
+  display:inline-block;
+  background:var(--accent-soft);color:var(--accent);
+  border-radius:4px;padding:5px 12px;font-size:11px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;
+}
+.section-title{
+  font-family:'DM Serif Display',serif;
+  font-size:38px;letter-spacing:-1px;line-height:1.1;color:var(--text);
+}
+
+/* SEARCH + FILTERS */
+.search-filter-bar{
+  display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:28px;
+}
+.search-wrap{flex:1;min-width:240px;position:relative;}
+.search-wrap input{
+  width:100%;padding:12px 18px 12px 44px;
+  border:1px solid var(--border);border-radius:50px;
+  outline:none;background:var(--surface);
+  color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;
+  transition:0.2s;
+}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(26,58,42,0.08);}
+.search-wrap input::placeholder{color:var(--text-light);}
+.search-icon{
+  position:absolute;left:16px;top:50%;transform:translateY(-50%);
+  color:var(--text-light);font-size:16px;pointer-events:none;
+}
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;}
+.filter-pill{
+  padding:8px 18px;border-radius:50px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text-mid);
+  font-size:12px;font-weight:600;cursor:pointer;transition:0.2s;
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'DM Sans',sans-serif;
+}
+.filter-pill:hover{background:var(--surface2);border-color:#CCC9C0;color:var(--text);}
+.filter-pill.active{background:var(--accent);color:#FFF;border-color:var(--accent);}
+.filter-pill .pill-count{
+  background:rgba(0,0,0,0.12);border-radius:20px;
+  padding:1px 7px;font-size:10px;
+}
+.filter-pill.active .pill-count{background:rgba(255,255,255,0.2);}
+.career-count{
+  font-size:13px;color:var(--text-light);font-weight:500;margin-bottom:28px;
+}
+.career-count strong{color:var(--accent);}
+
+/* PROFESSION SECTION */
+.profession-section{margin-bottom:52px;}
+.profession-header{
+  display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:0 2px;
+}
+.profession-icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;
+}
+.profession-label{font-size:18px;font-weight:700;color:var(--text);}
+.profession-label small{display:block;font-size:12px;font-weight:400;color:var(--text-light);margin-top:1px;}
+.profession-divider{flex:1;height:1px;background:var(--border);margin-left:10px;}
+
+/* CAREER CARDS */
+.career-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+.career-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:24px;
+  transition:0.3s ease;position:relative;overflow:hidden;
+}
+.career-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-md);}
+.career-card .match-pct{
+  font-family:'DM Serif Display',serif;
+  font-size:38px;color:var(--accent);line-height:1;margin-bottom:10px;
+}
+.career-card .match-label{
+  font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+  color:var(--text-light);margin-bottom:14px;display:block;
+}
+.career-card h3{font-size:17px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.career-card .field-tag{
+  font-size:11px;color:var(--accent2);font-weight:600;margin-bottom:12px;display:block;
+}
+.career-card p{line-height:1.75;color:var(--text-mid);font-size:13px;margin-bottom:18px;}
+.card-footer{display:flex;justify-content:space-between;align-items:center;}
+.tag{display:inline-block;padding:5px 12px;border-radius:30px;font-size:11px;font-weight:700;}
+.demand-high{background:#DCFCE7;color:#166534;}
+.demand-trending{background:#DBEAFE;color:#1E40AF;}
+.demand-emerging{background:#EDE9FE;color:#5B21B6;}
+.demand-stable{background:var(--accent2-soft);color:#92400E;}
+.demand-prestigious{background:#FEE2E2;color:#991B1B;}
+.no-results{text-align:center;padding:60px 20px;color:var(--text-light);font-size:15px;}
+
+/* SKILLS */
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;}
+.skill-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px;
+}
+.skill-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.skill-name{font-size:14px;font-weight:600;color:var(--text);}
+.skill-pct{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);}
+.progress{width:100%;height:8px;background:var(--surface2);border-radius:30px;overflow:hidden;}
+.progress-bar{height:100%;border-radius:30px;transition:width 1.5s cubic-bezier(0.22,1,0.36,1);}
+
+/* ROADMAP */
+.roadmap{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;}
+.step{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:28px;
+  transition:0.3s;position:relative;overflow:hidden;
+}
+.step:hover{transform:translateY(-6px);box-shadow:var(--shadow-md);}
+.step-num{
+  font-family:'DM Serif Display',serif;
+  font-size:48px;color:var(--surface2);
+  line-height:1;margin-bottom:16px;
+  position:absolute;top:16px;right:20px;
+}
+.step h4{font-size:15px;font-weight:700;color:var(--text);margin-bottom:10px;position:relative;}
+.step p{line-height:1.75;color:var(--text-mid);font-size:13px;position:relative;}
+.step-badge{
+  display:inline-block;background:var(--accent-soft);color:var(--accent);
+  border-radius:50px;padding:4px 12px;font-size:11px;font-weight:700;
+  margin-bottom:14px;position:relative;
+}
+
+/* RESOURCES */
+.resources-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;}
+.resource-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:22px;transition:0.3s;
+}
+.resource-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);}
+.resource-card h4{font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px;}
+.type-badge{
+  font-size:11px;font-weight:700;background:var(--accent-soft);color:var(--accent);
+  padding:4px 10px;border-radius:20px;margin-bottom:14px;display:inline-block;
+}
+.resource-card a{
+  color:var(--accent2);font-size:13px;font-weight:600;text-decoration:none;
+  display:inline-flex;align-items:center;gap:5px;
+  border-bottom:1px solid #E8D5A8;padding-bottom:2px;
+}
+.resource-card a:hover{color:var(--accent);}
+
+/* TIP BOX */
+.tip-box{
+  background:var(--accent2-soft);border:1px solid #E8D5A8;
+  border-radius:var(--radius-lg);padding:36px 40px;
+  text-align:center;margin-top:0;
+  font-size:17px;line-height:1.85;font-style:italic;
+  color:#7A5B20;
+  position:relative;overflow:hidden;
+}
+.tip-box::before{
+  content:'"';
+  font-family:'DM Serif Display',serif;
+  font-size:160px;line-height:1;color:rgba(200,150,60,0.1);
+  position:absolute;top:-20px;left:20px;pointer-events:none;
+}
+
+/* ── COURSE RECOMMENDATION MODE ─────────────────────── */
+#coursePanel{padding:48px 7% 80px;max-width:1280px;margin:0 auto;display:none;}
+
+.course-header{margin-bottom:48px;}
+.course-header p{color:var(--text-mid);font-size:15px;margin-top:10px;max-width:600px;line-height:1.75;}
+
+/* career selector row */
+.career-selector{
+  display:flex;flex-wrap:wrap;gap:10px;margin-bottom:40px;
+}
+.career-pill{
+  padding:10px 20px;border-radius:50px;
+  border:2px solid var(--border);background:var(--surface);
+  color:var(--text-mid);font-size:13px;font-weight:600;
+  cursor:pointer;transition:0.2s;font-family:'DM Sans',sans-serif;
+  display:inline-flex;align-items:center;gap:8px;
+}
+.career-pill:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+.career-pill.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
+.career-pill .cpill-pct{
+  background:rgba(255,255,255,0.2);border-radius:20px;
+  padding:2px 8px;font-size:11px;
+}
+.career-pill:not(.selected) .cpill-pct{background:var(--surface2);color:var(--text-light);}
+
+/* phase timeline */
+.phase-timeline{display:flex;flex-direction:column;gap:32px;}
+
+.phase{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);overflow:hidden;
+  transition:box-shadow 0.3s;
+}
+.phase:hover{box-shadow:var(--shadow-md);}
+
+.phase-head{
+  display:flex;align-items:center;gap:18px;
+  padding:22px 28px;
+  border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;
+}
+.phase-num{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'DM Serif Display',serif;font-size:22px;color:#fff;
+}
+.phase-info{flex:1;}
+.phase-info h3{font-size:17px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.phase-info p{font-size:13px;color:var(--text-light);}
+.phase-meta{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.phase-dur{
+  background:var(--surface2);border:1px solid var(--border);
+  border-radius:50px;padding:5px 14px;font-size:12px;font-weight:600;color:var(--text-mid);
+}
+.phase-chevron{font-size:18px;color:var(--text-light);transition:transform 0.3s;}
+.phase.open .phase-chevron{transform:rotate(180deg);}
+
+.phase-body{display:none;padding:28px;}
+.phase.open .phase-body{display:block;}
+
+/* topic grid */
+.topic-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:16px;
+}
+.topic-card{
+  border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;background:var(--bg);
+  transition:0.25s;position:relative;
+}
+.topic-card:hover{background:var(--surface);box-shadow:var(--shadow);transform:translateY(-3px);}
+.topic-icon{font-size:26px;margin-bottom:12px;display:block;}
+.topic-card h4{font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px;}
+.topic-card p{font-size:12px;color:var(--text-light);line-height:1.65;margin-bottom:14px;}
+.topic-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.topic-tag{
+  font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
+  background:var(--surface2);color:var(--text-mid);border:1px solid var(--border);
+}
+.topic-links{display:flex;flex-wrap:wrap;gap:8px;}
+.topic-link{
+  font-size:11px;font-weight:600;color:var(--accent2);text-decoration:none;
+  border:1px solid #E8D5A8;border-radius:20px;
+  padding:4px 11px;background:var(--accent2-soft);
+  display:inline-flex;align-items:center;gap:4px;
+  transition:0.2s;
+}
+.topic-link:hover{background:var(--accent2);color:#fff;border-color:var(--accent2);}
+
+/* difficulty badge */
+.diff-badge{
+  position:absolute;top:14px;right:14px;
+  font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;
+}
+.diff-beginner{background:#DCFCE7;color:#166534;}
+.diff-intermediate{background:#DBEAFE;color:#1E40AF;}
+.diff-advanced{background:#EDE9FE;color:#5B21B6;}
+
+/* progress tracker */
+.phase-progress-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-top:20px;padding-top:20px;border-top:1px solid var(--border);
+  flex-wrap:wrap;gap:12px;
+}
+.phase-progress-info{font-size:13px;color:var(--text-light);}
+.phase-progress-info strong{color:var(--accent);}
+.topic-check-all{
+  padding:8px 20px;border-radius:50px;border:1px solid var(--accent);
+  background:none;color:var(--accent);font-size:12px;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:0.2s;
+}
+.topic-check-all:hover{background:var(--accent);color:#fff;}
+
+/* checklist item */
+.topic-card.checked{
+  border-color:var(--accent);background:var(--accent-soft);
+}
+.topic-card.checked h4{color:var(--accent);}
+.check-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:700;cursor:pointer;
+  border:1px solid var(--border);border-radius:20px;
+  padding:5px 12px;background:var(--surface);color:var(--text-mid);
+  transition:0.2s;font-family:'DM Sans',sans-serif;
+}
+.check-btn:hover{border-color:var(--accent);color:var(--accent);}
+.topic-card.checked .check-btn{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+/* overall progress bar */
+.overall-progress-wrap{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:28px 32px;margin-bottom:40px;
+}
+.overall-progress-wrap h3{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;}
+.op-row{display:flex;align-items:center;gap:16px;}
+.op-bar-wrap{flex:1;height:12px;background:var(--surface2);border-radius:30px;overflow:hidden;}
+.op-bar{height:100%;border-radius:30px;background:var(--accent);transition:width 0.8s ease;width:0%;}
+.op-pct{font-family:'DM Serif Display',serif;font-size:28px;color:var(--accent);flex-shrink:0;}
+.op-label{font-size:13px;color:var(--text-light);margin-top:8px;}
+
+/* ACTIONS */
+.actions-bar{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:0 7% 80px;}
+.action-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:13px 26px;border-radius:50px;font-family:'DM Sans',sans-serif;
+  font-weight:600;font-size:14px;cursor:pointer;transition:0.25s;text-decoration:none;
+  border:1px solid var(--border);background:var(--surface);color:var(--text);
+}
+.action-btn:hover{background:var(--surface2);transform:translateY(-2px);box-shadow:var(--shadow);}
+.action-btn.primary{background:var(--accent);color:#FFF;border-color:var(--accent);box-shadow:0 4px 16px rgba(26,58,42,0.2);}
+.action-btn.primary:hover{background:#264D38;box-shadow:0 8px 24px rgba(26,58,42,0.28);}
+.action-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none !important;}
+
+/* ERROR */
+.error-card{
+  background:#FEF2F2;border:1px solid #FECACA;color:#991B1B;
+  border-radius:var(--radius-lg);padding:40px;text-align:center;
+  max-width:600px;margin:60px auto;
+}
+.error-card h3{font-family:'DM Serif Display',serif;font-size:26px;margin-bottom:12px;}
+.error-card p{font-size:15px;line-height:1.7;margin-bottom:24px;}
+
+/* FOOTER */
+footer{
+  background:var(--text);color:rgba(255,255,255,0.5);
+  padding:40px 7%;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;
+}
+.footer-logo{font-family:'DM Serif Display',serif;font-size:22px;color:#FFF;}
+.footer-logo span{color:var(--accent2);}
+footer p{font-size:13px;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeUp 0.55s ease forwards;}
+
+@media(max-width:768px){
+  header{padding:0 5%;}
+  .hero-result{padding:48px 5% 32px;}
+  .hero-greeting h1{font-size:36px;}
+  .summary-wrap,.section-wrap{padding-left:5%;padding-right:5%;}
+  .actions-bar{padding-left:5%;padding-right:5%;}
+  .summary-box{padding:26px 24px;}
+  nav a span{display:none;}
+  .mode-tab{padding:14px 16px;font-size:13px;}
+  #coursePanel{padding:32px 5% 60px;}
+  .phase-head{padding:18px 20px;}
+  .phase-body{padding:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING OVERLAY -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Analysing Your Profile</div>
+  <div class="loading-sub">AI is crafting your personalized career guidance</div>
+  <div class="loading-dots"><span></span><span></span><span></span></div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Career<span>Compass</span></div>
+  <nav>
+    <a href="/reset">← <span>Start Over</span></a>
+    <a href="/#career-form">✏️ <span>Edit Profile</span></a>
+  </nav>
+</header>
+
+<!-- HERO -->
+<section class="hero-result">
+  <div class="hero-greeting">
+    <div class="label">✦ AI Career Analysis</div>
+    <h1>Hello, <em id="studentName">{{ form.name }}</em>!</h1>
+    <p>Here's your personalized career guidance based on your profile.</p>
+    <div class="hero-meta" id="heroMeta"></div>
+  </div>
+</section>
+
+<!-- SUMMARY -->
+<div class="summary-wrap">
+  <div class="summary-box fade-in" id="summaryBox" style="display:none;">
+    <div class="summary-label">Profile Summary</div>
+    <span id="summaryText"></span>
+  </div>
+</div>
+
+<!-- MODE TABS -->
+<div class="mode-tab-bar" id="modeTabBar" style="display:none;">
+  <button class="mode-tab active" onclick="switchTab('careers',this)">🎯 Career Matches</button>
+  <button class="mode-tab" onclick="switchTab('skills',this)">📊 Skill Analysis</button>
+  <button class="mode-tab" onclick="switchTab('roadmap',this)">🗺️ Roadmap</button>
+  <button class="mode-tab" onclick="switchTab('resources',this)">📚 Resources</button>
+  <button class="mode-tab" onclick="switchTab('courses',this)">🎓 Course Recommendations <span class="tab-badge">New</span></button>
+</div>
+
+<!-- MAIN RESULTS -->
+<div id="resultsContainer" style="display:none;">
+
+  <!-- CAREERS TAB -->
+  <div id="tabCareers" class="section-wrap" style="padding-top:48px;">
+    <div class="section-head">
+      <div class="section-label">Career Matches</div>
+      <h2 class="section-title">Recommended Careers</h2>
+    </div>
+    <div class="search-filter-bar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="careerSearch" placeholder="Search careers or fields...">
+      </div>
+    </div>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="career-count" id="careerCount"></div>
+    <div id="careerContent"></div>
+  </div>
+
+  <!-- SKILLS TAB -->
+  <div id="tabSkills" class="section-wrap" style="padding-top:48px;display:none;">
+    <div class="section-head">
+      <div class="section-label">Self Assessment</div>
+      <h2 class="section-title">Skill Analysis</h2>
+    </div>
+    <div class="skills-grid" id="skillsSection"></div>
+  </div>
+
+  <!-- ROADMAP TAB -->
+  <div id="tabRoadmap" class="section-wrap" style="padding-top:48px;display:none;">
+    <div class="section-head">
+      <div class="section-label">Your Journey</div>
+      <h2 class="section-title">Career Roadmap</h2>
+    </div>
+    <div class="roadmap" id="roadmapSection"></div>
+  </div>
+
+  <!-- RESOURCES TAB -->
+  <div id="tabResources" class="section-wrap" style="padding-top:48px;display:none;">
+    <div class="section-head">
+      <div class="section-label">Learn & Grow</div>
+      <h2 class="section-title">Learning Resources</h2>
+    </div>
+    <div class="resources-grid" id="resourcesGrid"></div>
+    <div class="tip-box fade-in" id="tipBox" style="margin-top:40px;"></div>
+  </div>
+</div>
+
+<!-- ── COURSE RECOMMENDATION PANEL ─────────────────────── -->
+<div id="coursePanel">
+  <div class="course-header section-head">
+    <div class="section-label">Course Recommendations</div>
+    <h2 class="section-title">Your Personalised Learning Path</h2>
+    <p>Select a career below to see the exact topics and courses you need to master — in the right order, from beginner to expert.</p>
+  </div>
+
+  <!-- Career selector -->
+  <div class="career-selector" id="careerSelector"></div>
+
+  <!-- Overall progress tracker -->
+  <div class="overall-progress-wrap" id="overallProgressWrap" style="display:none;">
+    <h3>📈 Your Learning Progress</h3>
+    <div class="op-row">
+      <div style="flex:1;">
+        <div class="op-bar-wrap"><div class="op-bar" id="opBar"></div></div>
+        <div class="op-label" id="opLabel">Mark topics as done to track your journey</div>
+      </div>
+      <div class="op-pct" id="opPct">0%</div>
+    </div>
+  </div>
+
+  <!-- Phase timeline -->
+  <div class="phase-timeline" id="phaseTimeline"></div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions-bar" id="actionsBar" style="display:none;">
+  <a href="/reset" class="action-btn primary">🔄 Start New Analysis</a>
+  <button id="downloadBtn" class="action-btn" disabled>⬇ Download Readable Report</button>
+  <button id="copyBtn" class="action-btn" disabled>📋 Copy Summary</button>
+  <button id="saveBtn" class="action-btn" disabled>💾 Save Locally</button>
+</div>
+
+<!-- ERROR -->
+<div id="errorContainer" style="display:none;padding:0 7%;">
+  <div class="error-card">
+    <h3>Analysis Failed</h3>
+    <p id="errorMsg">Something went wrong. Please try again.</p>
+    <a href="/reset" class="action-btn primary">← Go Back</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Career<span>Compass</span></div>
+  <p>© 2026 CareerCompass · Student Career Guidance System</p>
+</footer>
+
+<script id="prompt-data" type="application/json">{{ prompt | default('', true) | tojson | safe }}</script>
+<script id="form-data" type="application/json">{{ form | default({}, true) | tojson | safe }}</script>
+
+<script>
+const PROMPT = JSON.parse(document.getElementById('prompt-data').textContent || '""');
+const FORM   = JSON.parse(document.getElementById('form-data').textContent || '{}');
+
+/* ─────────────────────────────────────────────────────────
+   COURSE DATABASE — topic roadmaps keyed by career title
+   ───────────────────────────────────────────────────────── */
+const COURSE_DB = {
+  "Machine Learning Engineer": {
+    color:"#1D4ED8",
+    phases:[
+      {
+        title:"Foundation",
+        subtitle:"Core programming and mathematical groundwork",
+        duration:"2–3 months",
+        topics:[
+          {icon:"🐍",title:"Python Programming",desc:"Variables, functions, OOP, file I/O, and Python ecosystem basics.",difficulty:"beginner",tags:["Python","OOP","Scripting"],links:[{label:"Python.org Docs",url:"https://docs.python.org/3/tutorial/"},{label:"freeCodeCamp",url:"https://www.freecodecamp.org/learn/scientific-computing-with-python/"}]},
+          {icon:"📐",title:"Linear Algebra",desc:"Vectors, matrices, eigenvalues — the math underneath ML models.",difficulty:"beginner",tags:["Maths","Vectors","Matrices"],links:[{label:"3Blue1Brown",url:"https://www.3blue1brown.com/topics/linear-algebra"},{label:"Khan Academy",url:"https://www.khanacademy.org/math/linear-algebra"}]},
+          {icon:"📊",title:"Statistics & Probability",desc:"Distributions, hypothesis testing, Bayes theorem, and inference.",difficulty:"beginner",tags:["Stats","Probability","Inference"],links:[{label:"StatQuest",url:"https://www.youtube.com/c/joshstarmer"},{label:"MIT OpenCourseWare",url:"https://ocw.mit.edu/courses/18-650-statistics-for-applications-fall-2016/"}]},
+          {icon:"🔢",title:"Calculus & Optimisation",desc:"Derivatives, gradients, chain rule — essential for gradient descent.",difficulty:"beginner",tags:["Calculus","Gradient","Optimisation"],links:[{label:"3Blue1Brown Calculus",url:"https://www.3blue1brown.com/topics/calculus"},{label:"Khan Academy",url:"https://www.khanacademy.org/math/ap-calculus-ab"}]},
+        ]
+      },
+      {
+        title:"Data & Tools",
+        subtitle:"Working with real data using Python libraries",
+        duration:"2–3 months",
+        topics:[
+          {icon:"🐼",title:"Data Structures & Algorithms",desc:"Arrays, linked lists, trees, sorting, searching — DSA for ML interviews.",difficulty:"intermediate",tags:["DSA","LeetCode","Python"],links:[{label:"LeetCode",url:"https://leetcode.com/"},{label:"GeeksforGeeks",url:"https://www.geeksforgeeks.org/data-structures/"}]},
+          {icon:"📦",title:"NumPy & Pandas",desc:"Array computing, DataFrames, data wrangling and EDA.",difficulty:"intermediate",tags:["NumPy","Pandas","EDA"],links:[{label:"Kaggle Learn",url:"https://www.kaggle.com/learn/pandas"},{label:"Official Docs",url:"https://pandas.pydata.org/docs/getting_started/intro_tutorials/"}]},
+          {icon:"📈",title:"Data Visualisation",desc:"Matplotlib, Seaborn, Plotly — turn raw numbers into insight.",difficulty:"intermediate",tags:["Matplotlib","Seaborn","Plotly"],links:[{label:"Kaggle Learn",url:"https://www.kaggle.com/learn/data-visualization"},{label:"Plotly Docs",url:"https://plotly.com/python/"}]},
+          {icon:"🗄️",title:"SQL & Databases",desc:"Querying, joining, aggregating data from relational databases.",difficulty:"intermediate",tags:["SQL","MySQL","PostgreSQL"],links:[{label:"SQLZoo",url:"https://sqlzoo.net/"},{label:"Mode SQL Tutorial",url:"https://mode.com/sql-tutorial/"}]},
+        ]
+      },
+      {
+        title:"Machine Learning",
+        subtitle:"Core ML algorithms and hands-on modelling",
+        duration:"3–4 months",
+        topics:[
+          {icon:"🤖",title:"Machine Learning Fundamentals",desc:"Regression, classification, clustering, model evaluation, bias-variance tradeoff.",difficulty:"intermediate",tags:["Scikit-learn","Regression","Classification"],links:[{label:"Google ML Crash Course",url:"https://developers.google.com/machine-learning/crash-course"},{label:"Scikit-learn Docs",url:"https://scikit-learn.org/stable/user_guide.html"}]},
+          {icon:"🌳",title:"Supervised Learning",desc:"Decision trees, random forests, SVMs, gradient boosting (XGBoost, LightGBM).",difficulty:"intermediate",tags:["XGBoost","Random Forest","SVM"],links:[{label:"XGBoost Docs",url:"https://xgboost.readthedocs.io/"},{label:"Kaggle Tutorials",url:"https://www.kaggle.com/learn/intro-to-machine-learning"}]},
+          {icon:"🔍",title:"Unsupervised Learning",desc:"K-Means, DBSCAN, PCA, dimensionality reduction, anomaly detection.",difficulty:"intermediate",tags:["K-Means","PCA","Clustering"],links:[{label:"Towards Data Science",url:"https://towardsdatascience.com/unsupervised-learning-14c4c58ebdb4"},{label:"Scikit-learn",url:"https://scikit-learn.org/stable/unsupervised_learning.html"}]},
+          {icon:"⚙️",title:"Feature Engineering",desc:"Encoding, scaling, imputation, feature selection and extraction.",difficulty:"intermediate",tags:["Preprocessing","Encoding","Scaling"],links:[{label:"Kaggle",url:"https://www.kaggle.com/learn/feature-engineering"},{label:"mlcourse.ai",url:"https://mlcourse.ai/"}]},
+        ]
+      },
+      {
+        title:"Deep Learning",
+        subtitle:"Neural networks and modern DL architectures",
+        duration:"3–4 months",
+        topics:[
+          {icon:"🧠",title:"Deep Learning & Neural Networks",desc:"Perceptrons, backprop, activation functions, regularisation — the DL core.",difficulty:"advanced",tags:["TensorFlow","Keras","PyTorch"],links:[{label:"fast.ai",url:"https://www.fast.ai/"},{label:"Deep Learning Book",url:"https://www.deeplearningbook.org/"}]},
+          {icon:"🖼️",title:"Computer Vision (CNNs)",desc:"Convolutional networks, ResNet, object detection with YOLO, image segmentation.",difficulty:"advanced",tags:["CNN","OpenCV","ResNet"],links:[{label:"CS231n Stanford",url:"https://cs231n.github.io/"},{label:"PyTorch Tutorials",url:"https://pytorch.org/tutorials/"}]},
+          {icon:"💬",title:"NLP & Transformers",desc:"Word embeddings, RNNs, attention mechanisms, BERT, GPT fine-tuning.",difficulty:"advanced",tags:["Transformers","HuggingFace","BERT"],links:[{label:"HuggingFace Course",url:"https://huggingface.co/course"},{label:"CS224N Stanford",url:"https://web.stanford.edu/class/cs224n/"}]},
+          {icon:"🎮",title:"Reinforcement Learning",desc:"MDP, Q-learning, policy gradients, OpenAI Gym environments.",difficulty:"advanced",tags:["RL","OpenAI Gym","Q-Learning"],links:[{label:"Spinning Up",url:"https://spinningup.openai.com/"},{label:"DeepMind x UCL",url:"https://www.deepmind.com/learning-resources"}]},
+        ]
+      },
+      {
+        title:"MLOps & Deployment",
+        subtitle:"Taking models to production like an engineer",
+        duration:"2–3 months",
+        topics:[
+          {icon:"🚀",title:"Model Deployment (Flask / FastAPI)",desc:"REST APIs, model serialisation, serving predictions in production.",difficulty:"advanced",tags:["FastAPI","Flask","REST"],links:[{label:"FastAPI Docs",url:"https://fastapi.tiangolo.com/"},{label:"Real Python",url:"https://realpython.com/api-integration-in-python/"}]},
+          {icon:"☁️",title:"Cloud Platforms (AWS / GCP / Azure)",desc:"SageMaker, Vertex AI, Azure ML — cloud-native ML pipelines.",difficulty:"advanced",tags:["AWS","GCP","SageMaker"],links:[{label:"AWS ML Specialty",url:"https://aws.amazon.com/certification/certified-machine-learning-specialty/"},{label:"Google Vertex AI",url:"https://cloud.google.com/vertex-ai/docs"}]},
+          {icon:"🐋",title:"Docker & Kubernetes",desc:"Containerise ML models, orchestrate with K8s for scale.",difficulty:"advanced",tags:["Docker","K8s","Containers"],links:[{label:"Docker Docs",url:"https://docs.docker.com/get-started/"},{label:"Kubernetes.io",url:"https://kubernetes.io/docs/tutorials/"}]},
+          {icon:"📋",title:"MLflow & Experiment Tracking",desc:"Track experiments, version models, build reproducible ML pipelines.",difficulty:"advanced",tags:["MLflow","DVC","CI/CD"],links:[{label:"MLflow Docs",url:"https://mlflow.org/docs/latest/index.html"},{label:"DVC",url:"https://dvc.org/doc"}]},
+        ]
+      }
+    ]
+  },
+
+  "Software Developer":{
+    color:"#1D4ED8",
+    phases:[
+      {title:"Programming Basics",subtitle:"Pick a language and master the fundamentals",duration:"1–2 months",topics:[
+        {icon:"🐍",title:"Python / JavaScript",desc:"Core syntax, data types, control flow, functions.",difficulty:"beginner",tags:["Python","JS","Syntax"],links:[{label:"The Odin Project",url:"https://www.theodinproject.com/"},{label:"Codecademy",url:"https://www.codecademy.com/"}]},
+        {icon:"🧩",title:"Data Structures & Algorithms",desc:"Arrays, stacks, queues, trees, sorting and searching.",difficulty:"beginner",tags:["DSA","Arrays","Trees"],links:[{label:"LeetCode",url:"https://leetcode.com/"},{label:"GeeksforGeeks",url:"https://www.geeksforgeeks.org/"}]},
+        {icon:"🔧",title:"Git & Version Control",desc:"Commits, branches, merges, pull requests and collaboration.",difficulty:"beginner",tags:["Git","GitHub","CLI"],links:[{label:"GitHub Docs",url:"https://docs.github.com/en/get-started"},{label:"Atlassian Git",url:"https://www.atlassian.com/git/tutorials"}]},
+        {icon:"🖥️",title:"Command Line & Linux",desc:"Bash, file system navigation, shell scripting basics.",difficulty:"beginner",tags:["Linux","Bash","Terminal"],links:[{label:"Linux Command",url:"https://linuxcommand.org/"},{label:"Missing Semester MIT",url:"https://missing.csail.mit.edu/"}]},
+      ]},
+      {title:"Web Development",subtitle:"Build real applications front to back",duration:"3–4 months",topics:[
+        {icon:"🌐",title:"HTML & CSS",desc:"Semantic markup, Flexbox, Grid, responsive design.",difficulty:"beginner",tags:["HTML","CSS","Responsive"],links:[{label:"W3Schools",url:"https://www.w3schools.com/"},{label:"freeCodeCamp",url:"https://www.freecodecamp.org/learn/responsive-web-design/"}]},
+        {icon:"⚡",title:"JavaScript & DOM",desc:"ES6+, async/await, fetch API, event handling.",difficulty:"intermediate",tags:["ES6","DOM","Async"],links:[{label:"javascript.info",url:"https://javascript.info/"},{label:"MDN Docs",url:"https://developer.mozilla.org/en-US/docs/Web/JavaScript"}]},
+        {icon:"⚛️",title:"React / Vue",desc:"Component-based UIs, state management, routing.",difficulty:"intermediate",tags:["React","Vue","SPA"],links:[{label:"React Docs",url:"https://react.dev/"},{label:"Vue Docs",url:"https://vuejs.org/guide/introduction.html"}]},
+        {icon:"🗄️",title:"Databases & SQL",desc:"Relational DB design, CRUD operations, ORMs.",difficulty:"intermediate",tags:["SQL","PostgreSQL","ORM"],links:[{label:"SQLZoo",url:"https://sqlzoo.net/"},{label:"Prisma ORM",url:"https://www.prisma.io/docs/"}]},
+      ]},
+      {title:"Backend & APIs",subtitle:"Server-side logic and API design",duration:"2–3 months",topics:[
+        {icon:"🔌",title:"REST APIs",desc:"HTTP methods, status codes, JSON, API design principles.",difficulty:"intermediate",tags:["REST","JSON","HTTP"],links:[{label:"REST API Tutorial",url:"https://restapitutorial.com/"},{label:"Postman Learning",url:"https://learning.postman.com/"}]},
+        {icon:"🛡️",title:"Authentication & Security",desc:"JWT, OAuth2, HTTPS, OWASP top 10.",difficulty:"intermediate",tags:["JWT","OAuth","Security"],links:[{label:"OWASP",url:"https://owasp.org/www-project-top-ten/"},{label:"Auth0 Blog",url:"https://auth0.com/blog/"}]},
+        {icon:"🐋",title:"Docker & Deployment",desc:"Containerisation, Docker Compose, cloud deployment.",difficulty:"advanced",tags:["Docker","CI/CD","Cloud"],links:[{label:"Docker Docs",url:"https://docs.docker.com/"},{label:"DigitalOcean Tutorials",url:"https://www.digitalocean.com/community/tutorials"}]},
+        {icon:"✅",title:"Testing & Code Quality",desc:"Unit tests, integration tests, TDD, code review practices.",difficulty:"advanced",tags:["Jest","pytest","TDD"],links:[{label:"Test-Driven Dev",url:"https://testdriven.io/"},{label:"Python Testing",url:"https://realpython.com/python-testing/"}]},
+      ]},
+    ]
+  },
+
+  "Data Scientist":{
+    color:"#047857",
+    phases:[
+      {title:"Python & Maths",subtitle:"Build the analytical foundation",duration:"2–3 months",topics:[
+        {icon:"🐍",title:"Python for Data Science",desc:"NumPy, Pandas, Matplotlib — the data science stack.",difficulty:"beginner",tags:["Python","NumPy","Pandas"],links:[{label:"Kaggle Learn",url:"https://www.kaggle.com/learn"},{label:"DataCamp",url:"https://www.datacamp.com/"}]},
+        {icon:"📐",title:"Statistics & Probability",desc:"Descriptive stats, hypothesis testing, confidence intervals.",difficulty:"beginner",tags:["Stats","Probability"],links:[{label:"StatQuest",url:"https://www.youtube.com/c/joshstarmer"},{label:"Khan Academy",url:"https://www.khanacademy.org/math/statistics-probability"}]},
+        {icon:"🔢",title:"Linear Algebra & Calculus",desc:"Matrices, eigenvalues, gradients for ML models.",difficulty:"intermediate",tags:["Maths","Linear Algebra"],links:[{label:"3Blue1Brown",url:"https://www.3blue1brown.com/"},{label:"MIT OCW",url:"https://ocw.mit.edu/"}]},
+        {icon:"🗄️",title:"SQL for Analysis",desc:"Complex queries, window functions, CTEs.",difficulty:"beginner",tags:["SQL","Analytics","CTEs"],links:[{label:"Mode Tutorial",url:"https://mode.com/sql-tutorial/"},{label:"SQLZoo",url:"https://sqlzoo.net/"}]},
+      ]},
+      {title:"Data Wrangling & EDA",subtitle:"Explore and clean real-world datasets",duration:"1–2 months",topics:[
+        {icon:"🔍",title:"Exploratory Data Analysis",desc:"Distributions, correlations, outlier detection, storytelling with data.",difficulty:"intermediate",tags:["EDA","Seaborn","Plotly"],links:[{label:"Kaggle EDA",url:"https://www.kaggle.com/learn/data-visualization"},{label:"Towards DS",url:"https://towardsdatascience.com/"}]},
+        {icon:"🧹",title:"Data Cleaning",desc:"Missing values, duplicates, encoding, normalisation.",difficulty:"intermediate",tags:["Cleaning","Imputation"],links:[{label:"Pandas Docs",url:"https://pandas.pydata.org/docs/"},{label:"Kaggle",url:"https://www.kaggle.com/learn/data-cleaning"}]},
+        {icon:"📊",title:"Feature Engineering",desc:"Creating, selecting and transforming features for modelling.",difficulty:"intermediate",tags:["Features","Transformation"],links:[{label:"Kaggle",url:"https://www.kaggle.com/learn/feature-engineering"},{label:"mlcourse.ai",url:"https://mlcourse.ai/"}]},
+        {icon:"🗺️",title:"Data Visualisation & Storytelling",desc:"Tableau, Power BI, Plotly dashboards — communicate insights.",difficulty:"intermediate",tags:["Tableau","Power BI","Plotly"],links:[{label:"Tableau Public",url:"https://public.tableau.com/en-us/s/resources"},{label:"Plotly",url:"https://plotly.com/"}]},
+      ]},
+      {title:"Modelling & ML",subtitle:"Apply machine learning to real problems",duration:"3–4 months",topics:[
+        {icon:"🤖",title:"Machine Learning with Scikit-learn",desc:"Train, tune and evaluate regression and classification models.",difficulty:"intermediate",tags:["Scikit-learn","ML","Modelling"],links:[{label:"Scikit-learn",url:"https://scikit-learn.org/stable/user_guide.html"},{label:"Google ML Crash",url:"https://developers.google.com/machine-learning/crash-course"}]},
+        {icon:"💡",title:"Model Evaluation & Metrics",desc:"Accuracy, F1, ROC-AUC, RMSE — choosing the right metric.",difficulty:"intermediate",tags:["Metrics","Cross-Validation"],links:[{label:"Scikit-learn Metrics",url:"https://scikit-learn.org/stable/modules/model_evaluation.html"},{label:"Towards DS",url:"https://towardsdatascience.com/"}]},
+        {icon:"🌊",title:"Time Series Analysis",desc:"ARIMA, forecasting, seasonal decomposition.",difficulty:"advanced",tags:["ARIMA","Forecasting","Time Series"],links:[{label:"Prophet Docs",url:"https://facebook.github.io/prophet/"},{label:"statsmodels",url:"https://www.statsmodels.org/stable/index.html"}]},
+        {icon:"🧠",title:"Deep Learning Basics",desc:"Intro to neural networks and when to use them in data science.",difficulty:"advanced",tags:["TensorFlow","Deep Learning"],links:[{label:"fast.ai",url:"https://www.fast.ai/"},{label:"Keras",url:"https://keras.io/getting_started/"}]},
+      ]},
+    ]
+  },
+
+  "AI Engineer":{
+    color:"#7C3AED",
+    phases:[
+      {title:"CS & Python Foundations",subtitle:"Solid programming and computer science base",duration:"2–3 months",topics:[
+        {icon:"🐍",title:"Advanced Python",desc:"Generators, decorators, concurrency, typing, packaging.",difficulty:"beginner",tags:["Python","OOP","Packaging"],links:[{label:"Real Python",url:"https://realpython.com/"},{label:"Python Docs",url:"https://docs.python.org/3/"}]},
+        {icon:"🧩",title:"Data Structures & Algorithms",desc:"Core DSA for technical interviews at AI companies.",difficulty:"intermediate",tags:["DSA","Graphs","Dynamic Programming"],links:[{label:"LeetCode",url:"https://leetcode.com/"},{label:"NeetCode",url:"https://neetcode.io/"}]},
+        {icon:"📐",title:"Maths for AI",desc:"Linear algebra, calculus, probability and information theory.",difficulty:"intermediate",tags:["Maths","Linear Algebra","Calculus"],links:[{label:"3Blue1Brown",url:"https://www.3blue1brown.com/"},{label:"Mathematics for ML Book",url:"https://mml-book.github.io/"}]},
+        {icon:"🗄️",title:"Databases & Vector Stores",desc:"SQL, NoSQL, and vector databases (Pinecone, Weaviate, Chroma).",difficulty:"intermediate",tags:["SQL","Vector DB","Pinecone"],links:[{label:"Pinecone Docs",url:"https://docs.pinecone.io/"},{label:"Weaviate",url:"https://weaviate.io/developers/weaviate"}]},
+      ]},
+      {title:"Machine & Deep Learning",subtitle:"Core AI model knowledge",duration:"3–4 months",topics:[
+        {icon:"🤖",title:"Machine Learning",desc:"Supervised, unsupervised, reinforcement — the full spectrum.",difficulty:"intermediate",tags:["ML","Scikit-learn","XGBoost"],links:[{label:"Google ML Crash Course",url:"https://developers.google.com/machine-learning/crash-course"},{label:"fast.ai",url:"https://www.fast.ai/"}]},
+        {icon:"🧠",title:"Deep Learning & PyTorch",desc:"Neural networks, CNNs, RNNs, attention — built in PyTorch.",difficulty:"advanced",tags:["PyTorch","Neural Networks","Backprop"],links:[{label:"PyTorch Tutorials",url:"https://pytorch.org/tutorials/"},{label:"Deep Learning Book",url:"https://www.deeplearningbook.org/"}]},
+        {icon:"💬",title:"Transformers & LLMs",desc:"BERT, GPT, T5, RLHF — the architecture powering modern AI.",difficulty:"advanced",tags:["LLMs","BERT","GPT","Transformers"],links:[{label:"HuggingFace Course",url:"https://huggingface.co/course"},{label:"Andrej Karpathy",url:"https://karpathy.ai/"}]},
+        {icon:"🖼️",title:"Computer Vision & Multimodal AI",desc:"CLIP, ViT, diffusion models, image-text-audio fusion.",difficulty:"advanced",tags:["CLIP","ViT","Diffusion"],links:[{label:"CS231n",url:"https://cs231n.github.io/"},{label:"OpenAI CLIP",url:"https://openai.com/research/clip"}]},
+      ]},
+      {title:"LLM Engineering",subtitle:"Build products on top of foundation models",duration:"2–3 months",topics:[
+        {icon:"🔗",title:"LangChain & LlamaIndex",desc:"Build chains, agents, RAG pipelines on top of LLMs.",difficulty:"advanced",tags:["LangChain","RAG","Agents"],links:[{label:"LangChain Docs",url:"https://python.langchain.com/docs/get_started/introduction"},{label:"LlamaIndex",url:"https://docs.llamaindex.ai/"}]},
+        {icon:"🎯",title:"Prompt Engineering",desc:"Chain-of-thought, few-shot, retrieval-augmented generation.",difficulty:"intermediate",tags:["Prompting","RAG","Few-shot"],links:[{label:"OpenAI Cookbook",url:"https://cookbook.openai.com/"},{label:"PromptingGuide.ai",url:"https://www.promptingguide.ai/"}]},
+        {icon:"⚙️",title:"Fine-Tuning & PEFT",desc:"LoRA, QLoRA, instruction tuning — adapt models to your domain.",difficulty:"advanced",tags:["LoRA","Fine-Tuning","PEFT"],links:[{label:"HuggingFace PEFT",url:"https://huggingface.co/docs/peft"},{label:"Axolotl",url:"https://github.com/OpenAccess-AI-Collective/axolotl"}]},
+        {icon:"🚀",title:"AI Product Deployment",desc:"FastAPI, Docker, LLM gateways, observability with LangSmith.",difficulty:"advanced",tags:["FastAPI","LangSmith","Docker"],links:[{label:"LangSmith",url:"https://smith.langchain.com/"},{label:"FastAPI",url:"https://fastapi.tiangolo.com/"}]},
+      ]},
+    ]
+  },
+
+  "UI/UX Designer":{
+    color:"#7C3AED",
+    phases:[
+      {title:"Design Foundations",subtitle:"Principles and tools every designer must know",duration:"1–2 months",topics:[
+        {icon:"🎨",title:"Design Principles",desc:"Colour theory, typography, hierarchy, contrast, alignment, Gestalt.",difficulty:"beginner",tags:["Colour","Typography","Layout"],links:[{label:"Canva Design School",url:"https://www.canva.com/learn/design"},{label:"Google Material Design",url:"https://m3.material.io/"}]},
+        {icon:"🖌️",title:"Figma Essentials",desc:"Frames, components, auto-layout, prototyping, design systems.",difficulty:"beginner",tags:["Figma","Prototyping","Components"],links:[{label:"Figma Learn",url:"https://help.figma.com/hc/en-us/categories/360002042553-Using-Figma"},{label:"Figma Community",url:"https://www.figma.com/community"}]},
+        {icon:"📐",title:"Wireframing & Information Architecture",desc:"Low/high fidelity wireframes, sitemaps, user flows.",difficulty:"beginner",tags:["Wireframing","IA","User Flows"],links:[{label:"Miro",url:"https://miro.com/ux/wireframing/"},{label:"Balsamiq",url:"https://balsamiq.com/wireframes/"}]},
+        {icon:"♿",title:"Accessibility (WCAG)",desc:"Contrast ratios, ARIA labels, screen reader compatibility.",difficulty:"intermediate",tags:["WCAG","A11y","Inclusive Design"],links:[{label:"W3C WCAG",url:"https://www.w3.org/WAI/standards-guidelines/wcag/"},{label:"Deque University",url:"https://dequeuniversity.com/"}]},
+      ]},
+      {title:"UX Research",subtitle:"Understand users deeply",duration:"1–2 months",topics:[
+        {icon:"🔍",title:"User Research Methods",desc:"Interviews, surveys, card sorting, ethnographic studies.",difficulty:"intermediate",tags:["Research","Interviews","Surveys"],links:[{label:"NNGroup",url:"https://www.nngroup.com/articles/"},{label:"UX Research Field Guide",url:"https://www.userinterviews.com/ux-research-field-guide"}]},
+        {icon:"🧪",title:"Usability Testing",desc:"Moderated/unmoderated tests, think-aloud protocols, heatmaps.",difficulty:"intermediate",tags:["Usability","Hotjar","Testing"],links:[{label:"Maze",url:"https://maze.co/"},{label:"Hotjar",url:"https://www.hotjar.com/"}]},
+        {icon:"🗺️",title:"User Journey Mapping",desc:"Personas, journey maps, empathy maps, scenario planning.",difficulty:"intermediate",tags:["Personas","Journey Maps","Empathy"],links:[{label:"UXPressia",url:"https://uxpressia.com/"},{label:"Interaction Design Foundation",url:"https://www.interaction-design.org/"}]},
+        {icon:"📊",title:"Analytics & Data-Driven Design",desc:"Google Analytics, Mixpanel, A/B testing and conversion funnels.",difficulty:"advanced",tags:["Analytics","A/B Testing","Mixpanel"],links:[{label:"Google Analytics",url:"https://analytics.google.com/"},{label:"Mixpanel",url:"https://mixpanel.com/blog/"}]},
+      ]},
+      {title:"Advanced Design & Portfolio",subtitle:"Specialise and showcase your work",duration:"2–3 months",topics:[
+        {icon:"📱",title:"Mobile App Design",desc:"iOS and Android design patterns, gesture interfaces, adaptive layouts.",difficulty:"advanced",tags:["iOS","Android","Responsive"],links:[{label:"Apple HIG",url:"https://developer.apple.com/design/human-interface-guidelines/"},{label:"Material You",url:"https://m3.material.io/"}]},
+        {icon:"✨",title:"Micro-interactions & Motion",desc:"After Effects, Lottie, Principle — animation for delight.",difficulty:"advanced",tags:["Motion","Lottie","After Effects"],links:[{label:"LottieFiles",url:"https://lottiefiles.com/"},{label:"Principle",url:"https://principleformac.com/"}]},
+        {icon:"💼",title:"Portfolio & Case Studies",desc:"Write compelling case studies showing your process and impact.",difficulty:"advanced",tags:["Portfolio","Behance","Dribbble"],links:[{label:"Dribbble",url:"https://dribbble.com/"},{label:"Behance",url:"https://www.behance.net/"}]},
+        {icon:"🤝",title:"Design Handoff & Dev Collaboration",desc:"Zeplin, Figma Dev Mode, design tokens, working with engineers.",difficulty:"intermediate",tags:["Handoff","Dev Mode","Zeplin"],links:[{label:"Zeplin",url:"https://zeplin.io/"},{label:"Figma Dev Mode",url:"https://www.figma.com/dev-mode/"}]},
+      ]},
+    ]
+  },
+
+  "Cybersecurity Analyst":{
+    color:"#DC2626",
+    phases:[
+      {title:"Networking & OS Fundamentals",subtitle:"Understand the systems you will protect",duration:"2–3 months",topics:[
+        {icon:"🌐",title:"Networking Fundamentals",desc:"TCP/IP, DNS, HTTP, subnetting, OSI model, packet analysis.",difficulty:"beginner",tags:["TCP/IP","DNS","Wireshark"],links:[{label:"CompTIA Network+",url:"https://www.comptia.org/certifications/network"},{label:"Wireshark Docs",url:"https://www.wireshark.org/docs/"}]},
+        {icon:"🐧",title:"Linux for Security",desc:"CLI, file permissions, process management, shell scripting.",difficulty:"beginner",tags:["Linux","Bash","Permissions"],links:[{label:"OverTheWire",url:"https://overthewire.org/wargames/bandit/"},{label:"Linux Command",url:"https://linuxcommand.org/"}]},
+        {icon:"💻",title:"Windows Security Basics",desc:"Active Directory, Group Policy, Windows event logs.",difficulty:"beginner",tags:["Windows","AD","Event Logs"],links:[{label:"TryHackMe",url:"https://tryhackme.com/room/activedirectorybasics"},{label:"Microsoft Docs",url:"https://docs.microsoft.com/en-us/windows-server/identity/ad-ds/"}]},
+        {icon:"🐍",title:"Python & Bash Scripting",desc:"Automate security tasks — scanners, log parsers, exploits.",difficulty:"intermediate",tags:["Python","Scripting","Automation"],links:[{label:"Automate the Boring Stuff",url:"https://automatetheboringstuff.com/"},{label:"Black Hat Python",url:"https://nostarch.com/black-hat-python2E"}]},
+      ]},
+      {title:"Security Concepts & Ethical Hacking",subtitle:"Learn to think like an attacker",duration:"2–3 months",topics:[
+        {icon:"🔐",title:"Cryptography",desc:"Symmetric/asymmetric encryption, hashing, PKI, TLS/SSL.",difficulty:"intermediate",tags:["AES","RSA","TLS","Hashing"],links:[{label:"Crypto101",url:"https://crypto101.io/"},{label:"Khan Academy Crypto",url:"https://www.khanacademy.org/computing/computer-science/cryptography"}]},
+        {icon:"🎯",title:"Penetration Testing Basics",desc:"Nmap, Metasploit, Burp Suite, OWASP Top 10, CTF challenges.",difficulty:"intermediate",tags:["Pentest","Nmap","Burp Suite"],links:[{label:"TryHackMe",url:"https://tryhackme.com/"},{label:"Hack The Box",url:"https://www.hackthebox.com/"}]},
+        {icon:"🌍",title:"Web Application Security",desc:"XSS, SQL injection, CSRF, SSRF, API security testing.",difficulty:"intermediate",tags:["OWASP","XSS","SQL Injection"],links:[{label:"PortSwigger Academy",url:"https://portswigger.net/web-security"},{label:"OWASP",url:"https://owasp.org/"}]},
+        {icon:"☁️",title:"Cloud Security",desc:"AWS/Azure IAM, S3 misconfigurations, cloud threat modelling.",difficulty:"advanced",tags:["AWS","IAM","Cloud"],links:[{label:"AWS Security Specialty",url:"https://aws.amazon.com/certification/certified-security-specialty/"},{label:"CloudSecDocs",url:"https://cloudsecdocs.com/"}]},
+      ]},
+      {title:"SOC & Incident Response",subtitle:"Defend and respond to attacks",duration:"2–3 months",topics:[
+        {icon:"🛡️",title:"SIEM & Log Analysis",desc:"Splunk, ELK stack, threat hunting, alert triage.",difficulty:"advanced",tags:["Splunk","ELK","SIEM"],links:[{label:"Splunk Free Training",url:"https://www.splunk.com/en_us/training.html"},{label:"Elastic Security",url:"https://www.elastic.co/security"}]},
+        {icon:"🔬",title:"Digital Forensics",desc:"Evidence acquisition, file carving, memory forensics with Volatility.",difficulty:"advanced",tags:["Forensics","Volatility","Autopsy"],links:[{label:"SANS DFIR",url:"https://www.sans.org/cyber-security-courses/digital-forensics/"},{label:"Autopsy Docs",url:"https://www.autopsy.com/support/docs.php"}]},
+        {icon:"📋",title:"Security Certifications",desc:"CompTIA Security+, CEH, OSCP — your certification roadmap.",difficulty:"advanced",tags:["CompTIA","CEH","OSCP"],links:[{label:"CompTIA Security+",url:"https://www.comptia.org/certifications/security"},{label:"Offensive Security OSCP",url:"https://www.offensive-security.com/pwk-oscp/"}]},
+        {icon:"⚠️",title:"Threat Intelligence & CTI",desc:"MITRE ATT&CK, IOCs, threat actor profiling.",difficulty:"advanced",tags:["MITRE","CTI","IOCs"],links:[{label:"MITRE ATT&CK",url:"https://attack.mitre.org/"},{label:"VirusTotal",url:"https://www.virustotal.com/"}]},
+      ]},
+    ]
+  },
+
+  "Digital Marketer":{
+    color:"#0F766E",
+    phases:[
+      {title:"Marketing Fundamentals",subtitle:"Understand the marketing landscape",duration:"1–2 months",topics:[
+        {icon:"📣",title:"Marketing Basics & Strategy",desc:"4Ps, STP, customer personas, marketing funnel, brand positioning.",difficulty:"beginner",tags:["Strategy","Brand","Funnel"],links:[{label:"HubSpot Academy",url:"https://academy.hubspot.com/"},{label:"Google Garage",url:"https://learndigital.withgoogle.com/digitalgarage"}]},
+        {icon:"📝",title:"Content Marketing",desc:"Blog writing, content calendars, SEO copywriting, storytelling.",difficulty:"beginner",tags:["Content","SEO Writing","Blog"],links:[{label:"HubSpot Blog",url:"https://blog.hubspot.com/"},{label:"Copyblogger",url:"https://copyblogger.com/"}]},
+        {icon:"📱",title:"Social Media Marketing",desc:"Instagram, LinkedIn, Twitter/X, TikTok — platform strategy and posting.",difficulty:"beginner",tags:["Social Media","Instagram","LinkedIn"],links:[{label:"Buffer Blog",url:"https://buffer.com/resources/"},{label:"Sprout Social",url:"https://sproutsocial.com/insights/"}]},
+        {icon:"📧",title:"Email Marketing",desc:"Mailchimp, segmentation, A/B testing, automation sequences.",difficulty:"beginner",tags:["Email","Mailchimp","Automation"],links:[{label:"Mailchimp Academy",url:"https://mailchimp.com/resources/"},{label:"Campaign Monitor",url:"https://www.campaignmonitor.com/resources/"}]},
+      ]},
+      {title:"SEO & Paid Ads",subtitle:"Drive traffic organically and through paid channels",duration:"2–3 months",topics:[
+        {icon:"🔍",title:"Search Engine Optimisation (SEO)",desc:"On-page, off-page, technical SEO, keyword research, backlink building.",difficulty:"intermediate",tags:["SEO","Keywords","Backlinks"],links:[{label:"Moz Beginner's Guide",url:"https://moz.com/beginners-guide-to-seo"},{label:"Semrush Academy",url:"https://www.semrush.com/academy/"}]},
+        {icon:"💰",title:"Google Ads (PPC)",desc:"Search campaigns, display ads, Quality Score, bidding strategies.",difficulty:"intermediate",tags:["Google Ads","PPC","Bidding"],links:[{label:"Google Skillshop",url:"https://skillshop.withgoogle.com/"},{label:"WordStream",url:"https://www.wordstream.com/google-adwords"}]},
+        {icon:"📊",title:"Analytics & Data",desc:"Google Analytics 4, conversion tracking, attribution modelling.",difficulty:"intermediate",tags:["GA4","Analytics","Attribution"],links:[{label:"GA4 Academy",url:"https://skillshop.withgoogle.com/google-analytics"},{label:"Hotjar",url:"https://www.hotjar.com/"}]},
+        {icon:"🎯",title:"Meta & LinkedIn Ads",desc:"Facebook/Instagram ad manager, audience targeting, retargeting.",difficulty:"intermediate",tags:["Meta Ads","LinkedIn Ads","Targeting"],links:[{label:"Meta Blueprint",url:"https://www.facebook.com/business/learn"},{label:"LinkedIn Marketing",url:"https://training.marketing.linkedin.com/"}]},
+      ]},
+      {title:"Advanced & Specialisation",subtitle:"Become a full-stack digital marketer",duration:"2–3 months",topics:[
+        {icon:"🎥",title:"Video & YouTube Marketing",desc:"YouTube SEO, video scripting, thumbnails, channel growth.",difficulty:"advanced",tags:["YouTube","Video","TikTok"],links:[{label:"TubeBuddy",url:"https://www.tubebuddy.com/"},{label:"Think Media",url:"https://www.youtube.com/c/ThinkMedia"}]},
+        {icon:"🤖",title:"AI Tools for Marketing",desc:"ChatGPT, Jasper, Midjourney, Copy.ai for content and campaigns.",difficulty:"intermediate",tags:["AI","ChatGPT","Jasper"],links:[{label:"Jasper.ai",url:"https://www.jasper.ai/"},{label:"Copy.ai",url:"https://www.copy.ai/"}]},
+        {icon:"📈",title:"Growth Hacking",desc:"AARRR metrics, viral loops, A/B testing, product-led growth.",difficulty:"advanced",tags:["Growth","AARRR","Viral"],links:[{label:"GrowthHackers",url:"https://growthhackers.com/"},{label:"Reforge",url:"https://www.reforge.com/"}]},
+        {icon:"💼",title:"Marketing Portfolio & Certifications",desc:"Google, HubSpot, Meta certifications + building a case study portfolio.",difficulty:"advanced",tags:["Certifications","Portfolio","HubSpot"],links:[{label:"HubSpot Certifications",url:"https://app.hubspot.com/academy/"},{label:"Google Certifications",url:"https://skillshop.withgoogle.com/"}]},
+      ]},
+    ]
+  }
+};
+
+// Build a fallback generic track for any career not in DB
+function buildGenericTrack(careerTitle, field) {
+  const fieldLower = (field || '').toLowerCase();
+  let topics = [];
+  if(fieldLower.includes('health') || fieldLower.includes('medic')) {
+    topics = [
+      {icon:"📚",title:"Biology & Anatomy",desc:"Core life sciences foundation.",difficulty:"beginner",tags:["Biology","Anatomy"],links:[{label:"Khan Academy",url:"https://www.khanacademy.org/science/biology"},{label:"Osmosis",url:"https://www.osmosis.org/"}]},
+      {icon:"🔬",title:"Clinical Sciences",desc:"Physiology, pathology and pharmacology.",difficulty:"intermediate",tags:["Physiology","Pathology"],links:[{label:"Amboss",url:"https://www.amboss.com/"},{label:"Osmosis",url:"https://www.osmosis.org/"}]},
+      {icon:"🏥",title:"Clinical Practice",desc:"Patient communication, diagnosis, treatment planning.",difficulty:"advanced",tags:["Clinical","Patient Care"],links:[{label:"WHO Learning Hub",url:"https://openwho.org/"},{label:"Medscape",url:"https://www.medscape.com/"}]},
+    ];
+  } else if(fieldLower.includes('financ') || fieldLower.includes('busi')) {
+    topics = [
+      {icon:"📊",title:"Financial Accounting",desc:"Balance sheets, P&L, cash flow statements.",difficulty:"beginner",tags:["Accounting","Finance"],links:[{label:"Investopedia",url:"https://www.investopedia.com/"},{label:"Coursera",url:"https://www.coursera.org/"}]},
+      {icon:"💹",title:"Financial Analysis",desc:"DCF, valuation, financial modelling in Excel.",difficulty:"intermediate",tags:["Valuation","Excel","Modelling"],links:[{label:"CFI",url:"https://corporatefinanceinstitute.com/"},{label:"Zerodha Varsity",url:"https://zerodha.com/varsity/"}]},
+      {icon:"🌍",title:"Markets & Economics",desc:"Macroeconomics, equity markets, derivatives basics.",difficulty:"intermediate",tags:["Markets","Economics"],links:[{label:"Investopedia",url:"https://www.investopedia.com/"},{label:"CFA Institute",url:"https://www.cfainstitute.org/"}]},
+    ];
+  } else {
+    topics = [
+      {icon:"📖",title:"Foundational Knowledge",desc:"Core concepts and principles of your field.",difficulty:"beginner",tags:["Foundations","Theory"],links:[{label:"Coursera",url:"https://www.coursera.org/"},{label:"edX",url:"https://www.edx.org/"}]},
+      {icon:"🛠️",title:"Practical Skills",desc:"Hands-on tools and techniques used in industry.",difficulty:"intermediate",tags:["Practical","Tools"],links:[{label:"Udemy",url:"https://www.udemy.com/"},{label:"Skillshare",url:"https://www.skillshare.com/"}]},
+      {icon:"💼",title:"Professional Development",desc:"Communication, networking, portfolio building.",difficulty:"advanced",tags:["Soft Skills","Portfolio"],links:[{label:"LinkedIn Learning",url:"https://www.linkedin.com/learning/"},{label:"Coursera",url:"https://www.coursera.org/"}]},
+    ];
+  }
+  return {
+    color:"#1A3A2A",
+    phases:[
+      {title:"Foundation",subtitle:"Build the knowledge base for "+careerTitle,duration:"2–3 months",topics:topics.slice(0,2)},
+      {title:"Core Skills",subtitle:"Develop job-ready skills",duration:"3–4 months",topics:topics.slice(2,4)||topics.slice(1)},
+    ]
+  };
+}
+
+/* ─── TAB SWITCHING ─── */
+const TAB_IDS = {
+  careers:   ['tabCareers'],
+  skills:    ['tabSkills'],
+  roadmap:   ['tabRoadmap'],
+  resources: ['tabResources'],
+  courses:   [],  // handled by coursePanel
+};
+
+function switchTab(tabKey, btn) {
+  // update button states
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+
+  // hide all
+  document.getElementById('tabCareers').style.display  = 'none';
+  document.getElementById('tabSkills').style.display   = 'none';
+  document.getElementById('tabRoadmap').style.display  = 'none';
+  document.getElementById('tabResources').style.display= 'none';
+  document.getElementById('coursePanel').style.display = 'none';
+
+  if(tabKey === 'courses') {
+    document.getElementById('coursePanel').style.display = 'block';
+  } else if(tabKey === 'careers')   { document.getElementById('tabCareers').style.display  = 'block'; }
+  else if(tabKey === 'skills')      { document.getElementById('tabSkills').style.display   = 'block'; animateBars(); }
+  else if(tabKey === 'roadmap')     { document.getElementById('tabRoadmap').style.display  = 'block'; }
+  else if(tabKey === 'resources')   { document.getElementById('tabResources').style.display= 'block'; }
+}
+
+/* ─── COURSE PANEL ─── */
+let checkedTopics = {};   // key: "phaseIdx-topicIdx"
+let currentCareerForCourses = null;
+
+function buildCoursePanel(careers) {
+  const selector = document.getElementById('careerSelector');
+  selector.innerHTML = '';
+  if(!careers.length) {
+    selector.innerHTML = '<p style="color:var(--text-light)">No career data available.</p>';
+    return;
+  }
+
+  careers.forEach((career, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'career-pill' + (i===0?' selected':'');
+    btn.innerHTML = `${career.title} <span class="cpill-pct">${career.match_percent}%</span>`;
+    btn.onclick = () => {
+      document.querySelectorAll('.career-pill').forEach(p=>p.classList.remove('selected'));
+      btn.classList.add('selected');
+      renderCourseTrack(career);
+    };
+    selector.appendChild(btn);
+  });
+
+  // Render first career
+  if(careers[0]) renderCourseTrack(careers[0]);
+}
+
+function renderCourseTrack(career) {
+  currentCareerForCourses = career.title;
+  checkedTopics = {};
+
+  const track = COURSE_DB[career.title] || buildGenericTrack(career.title, career.field || '');
+  const timeline = document.getElementById('phaseTimeline');
+  timeline.innerHTML = '';
+
+  document.getElementById('overallProgressWrap').style.display = 'block';
+  updateOverallProgress(track);
+
+  track.phases.forEach((phase, pi) => {
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'phase' + (pi===0?' open':'');
+    phaseEl.id = `phase_${pi}`;
+
+    // colour from track
+    const col = track.color || '#1A3A2A';
+
+    phaseEl.innerHTML = `
+      <div class="phase-head" onclick="togglePhase(${pi})">
+        <div class="phase-num" style="background:${col}">${pi+1}</div>
+        <div class="phase-info">
+          <h3>${phase.title}</h3>
+          <p>${phase.subtitle}</p>
+        </div>
+        <div class="phase-meta">
+          <span class="phase-dur">⏱ ${phase.duration}</span>
+          <span class="phase-chevron">▾</span>
+        </div>
+      </div>
+      <div class="phase-body">
+        <div class="topic-grid" id="topicGrid_${pi}"></div>
+        <div class="phase-progress-row">
+          <div class="phase-progress-info" id="phaseProgress_${pi}">
+            <strong>0 / ${phase.topics.length}</strong> topics completed
+          </div>
+          <button class="topic-check-all" onclick="checkAllInPhase(${pi},${phase.topics.length})">✓ Mark All Done</button>
+        </div>
+      </div>
+    `;
+    timeline.appendChild(phaseEl);
+
+    // Render topics
+    const grid = document.getElementById(`topicGrid_${pi}`);
+    phase.topics.forEach((topic, ti) => {
+      const card = document.createElement('div');
+      card.className = 'topic-card';
+      card.id = `topic_${pi}_${ti}`;
+      card.innerHTML = `
+        <span class="diff-badge diff-${topic.difficulty}">${topic.difficulty}</span>
+        <span class="topic-icon">${topic.icon}</span>
+        <h4>${topic.title}</h4>
+        <p>${topic.desc}</p>
+        <div class="topic-tags">${topic.tags.map(t=>`<span class="topic-tag">${t}</span>`).join('')}</div>
+        <div class="topic-links">${topic.links.map(l=>`<a class="topic-link" href="${l.url}" target="_blank" rel="noopener">↗ ${l.label}</a>`).join('')}</div>
+        <div style="margin-top:14px;">
+          <button class="check-btn" onclick="toggleTopic(${pi},${ti},${phase.topics.length})">
+            <span id="checkIcon_${pi}_${ti}">○</span> Mark Done
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  });
+
+  updateOverallProgress(track);
+}
+
+function togglePhase(pi) {
+  const el = document.getElementById(`phase_${pi}`);
+  el.classList.toggle('open');
+}
+
+function toggleTopic(pi, ti, total) {
+  const key = `${pi}-${ti}`;
+  checkedTopics[key] = !checkedTopics[key];
+  const card = document.getElementById(`topic_${pi}_${ti}`);
+  const icon = document.getElementById(`checkIcon_${pi}_${ti}`);
+  card.classList.toggle('checked', checkedTopics[key]);
+  icon.textContent = checkedTopics[key] ? '✓' : '○';
+  updatePhaseProgress(pi, total);
+  updateOverallProgressDynamic();
+}
+
+function checkAllInPhase(pi, total) {
+  for(let ti=0; ti<total; ti++) {
+    const key = `${pi}-${ti}`;
+    checkedTopics[key] = true;
+    const card = document.getElementById(`topic_${pi}_${ti}`);
+    const icon = document.getElementById(`checkIcon_${pi}_${ti}`);
+    if(card) card.classList.add('checked');
+    if(icon) icon.textContent = '✓';
+  }
+  updatePhaseProgress(pi, total);
+  updateOverallProgressDynamic();
+}
+
+function updatePhaseProgress(pi, total) {
+  let done = 0;
+  for(let ti=0; ti<total; ti++) if(checkedTopics[`${pi}-${ti}`]) done++;
+  const el = document.getElementById(`phaseProgress_${pi}`);
+  if(el) el.innerHTML = `<strong>${done} / ${total}</strong> topics completed`;
+}
+
+function updateOverallProgress(track) {
+  let total=0, done=0;
+  track.phases.forEach((ph,pi) => {
+    ph.topics.forEach((_,ti) => {
+      total++;
+      if(checkedTopics[`${pi}-${ti}`]) done++;
+    });
+  });
+  const pct = total>0 ? Math.round(done/total*100) : 0;
+  document.getElementById('opBar').style.width = pct+'%';
+  document.getElementById('opPct').textContent  = pct+'%';
+  document.getElementById('opLabel').textContent = `${done} of ${total} topics completed — keep going!`;
+}
+
+function updateOverallProgressDynamic() {
+  const career = currentCareerForCourses;
+  const track  = COURSE_DB[career] || buildGenericTrack(career,'');
+  updateOverallProgress(track);
+}
+
+/* ─────────────────────────────────────────────────────────
+   CAREER RESULTS (original logic)
+   ───────────────────────────────────────────────────────── */
+const PROFESSION_META = [
+  { key:'Medical & Healthcare',  icon:'🏥', accent:'#DC2626', bg:'#FEF2F2', keywords:['medical','healthcare','health','doctor','nurse','pharma','physio','psychology','mental','physician','surgeon'] },
+  { key:'Technology & IT',       icon:'💻', accent:'#1D4ED8', bg:'#EFF6FF', keywords:['computer','software','ai ','data','cyber','cloud','game','mobile','blockchain','tech','devops','it ','web','robotics','artificial intelligence','machine learning','programmer','developer'] },
+  { key:'Engineering',           icon:'⚙️', accent:'#B45309', bg:'#FFF7ED', keywords:['engineer','engineering','mechanical','civil','electrical','aerospace','automobile'] },
+  { key:'Business & Finance',    icon:'📊', accent:'#047857', bg:'#ECFDF5', keywords:['business','finance','bank','account','invest','entrepreneur','product manager','hr','human resource','management','analyst','economics','commerce'] },
+  { key:'Design & Creative',     icon:'🎨', accent:'#7C3AED', bg:'#F5F3FF', keywords:['design','graphic','ui','ux','animat','fashion','interior','art','creative','illustrat'] },
+  { key:'Education',             icon:'📚', accent:'#166534', bg:'#F0FDF4', keywords:['teacher','education','professor','tutor','learning','school','academy','instructor'] },
+  { key:'Law & Government',      icon:'⚖️', accent:'#92400E', bg:'#FFFBEB', keywords:['law','legal','lawyer','judge','court','police','govern','ias','army','defense','public service','civil service','criminal','forensic'] },
+  { key:'Media & Marketing',     icon:'📣', accent:'#0F766E', bg:'#F0FDFA', keywords:['media','market','content','journalist','public relation','communication','digital','social media','broadcast','advertising'] },
+  { key:'Aviation & Transport',  icon:'✈️', accent:'#1E40AF', bg:'#EFF6FF', keywords:['pilot','aviation','air traffic','marine','transport','ship','logistics'] },
+  { key:'Hospitality & Events',  icon:'🏨', accent:'#BE185D', bg:'#FDF2F8', keywords:['hotel','chef','hospitality','event','tourism','food','restaurant','culinary'] },
+  { key:'Other Careers',         icon:'🌟', accent:'#6B7280', bg:'#F9FAFB', keywords:[] }
+];
+const SKILL_COLORS=['#1A3A2A','#C8963C','#1D4ED8','#7C3AED','#047857'];
+
+function classifyCareer(career){
+  const h=(career.title+' '+career.field+' '+(career.description||'')).toLowerCase();
+  for(const p of PROFESSION_META){if(!p.keywords.length)continue;if(p.keywords.some(kw=>h.includes(kw)))return p.key;}
+  return 'Other Careers';
+}
+function demandClass(d){const s=(d||'').toLowerCase();if(s.includes('high'))return'demand-high';if(s.includes('trend'))return'demand-trending';if(s.includes('emerg'))return'demand-emerging';if(s.includes('prestig'))return'demand-prestigious';return'demand-stable';}
+function getProfMeta(k){return PROFESSION_META.find(p=>p.key===k)||PROFESSION_META[PROFESSION_META.length-1];}
+
+let allCareers=[],activeProfession='All',searchQuery='';
+
+function groupByProfession(c){const g={};for(const x of c){const k=x._profession;if(!g[k])g[k]=[];g[k].push(x);}return g;}
+
+function renderFilters(fg){
+  const bar=document.getElementById('filterBar');bar.innerHTML='';
+  const total=allCareers.length;
+  function pill(label,icon,count,active,onClick){const b=document.createElement('button');b.className='filter-pill'+(active?' active':'');b.innerHTML=`${icon} ${label} <span class="pill-count">${count}</span>`;b.onclick=onClick;bar.appendChild(b);}
+  pill('All','🌐',total,activeProfession==='All',()=>{activeProfession='All';render();});
+  PROFESSION_META.map(p=>p.key).filter(k=>fg[k]).forEach(k=>{const m=getProfMeta(k);pill(k,m.icon,fg[k].length,activeProfession===k,()=>{activeProfession=k;render();});});
+}
+
+function render(){
+  const q=searchQuery.toLowerCase();
+  const f=allCareers.filter(c=>{
+    const ms=!q||c.title.toLowerCase().includes(q)||c.field.toLowerCase().includes(q)||(c.description||'').toLowerCase().includes(q);
+    const mp=activeProfession==='All'||c._profession===activeProfession;
+    return ms&&mp;
+  });
+  renderFilters(groupByProfession(allCareers));
+  document.getElementById('careerCount').innerHTML=`Showing <strong>${f.length}</strong> career${f.length!==1?'s':''}`;
+  const content=document.getElementById('careerContent');content.innerHTML='';
+  if(!f.length){content.innerHTML='<div class="no-results">No careers found matching your search.</div>';return;}
+  const groups=groupByProfession(f);
+  PROFESSION_META.map(p=>p.key).filter(k=>groups[k]).forEach(key=>{
+    const careers=groups[key],meta=getProfMeta(key);
+    const sec=document.createElement('div');sec.className='profession-section fade-in';
+    sec.innerHTML=`<div class="profession-header"><div class="profession-icon" style="background:${meta.bg};border:1px solid ${meta.accent}22;">${meta.icon}</div><div class="profession-label">${key}<small>${careers.length} career${careers.length!==1?'s':''} recommended</small></div><div class="profession-divider"></div></div>`;
+    const grid=document.createElement('div');grid.className='career-grid';
+    careers.forEach(c=>{
+      const card=document.createElement('div');card.className='career-card fade-in';
+      card.style.borderTop=`3px solid ${meta.accent}`;
+      card.innerHTML=`<div class="match-pct">${c.match_percent}%</div><span class="match-label">Match Score</span><h3>${c.title}</h3><span class="field-tag">${meta.icon} ${c.field}</span><p>${c.description}</p><div class="card-footer"><span class="tag ${demandClass(c.demand)}">${c.demand}</span></div>`;
+      grid.appendChild(card);
+    });
+    sec.appendChild(grid);content.appendChild(sec);
+  });
+}
+
+let barsAnimated=false;
+function animateBars(){
+  if(barsAnimated)return;barsAnimated=true;
+  const scores=window._skillScores||{};
+  setTimeout(()=>{Object.entries(scores).forEach(([,v],i)=>{const b=document.getElementById(`bar${i}`);if(b)b.style.width=v+'%';});},200);
+}
+
+async function fetchAnalysis(){
+  try{
+    const resp=await fetch('/api/analyze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:PROMPT})});
+    const data=await resp.json();
+    if(!resp.ok||!data.success)throw new Error(data.error||'Unknown error');
+    renderResults(data.analysis);
+  }catch(err){
+    document.getElementById('loadingOverlay').style.display='none';
+    document.getElementById('errorContainer').style.display='block';
+    document.getElementById('errorMsg').textContent=err.message;
+  }
+}
+
+function renderResults(a){
+  // Meta chips
+  const meta=document.getElementById('heroMeta');
+  const chips=[{label:'Subject',val:FORM.subject},{label:'Interest',val:FORM.interest},{label:'Level',val:FORM.semester},{label:'Skill',val:FORM.skill}].filter(c=>c.val);
+  meta.innerHTML=chips.map(c=>`<div class="meta-chip"><strong>${c.label}:</strong> ${c.val}</div>`).join('');
+
+  // Summary
+  document.getElementById('summaryText').textContent=a.summary||'';
+  document.getElementById('summaryBox').style.display='block';
+
+  // Careers
+  const interest=(FORM.interest||'').toLowerCase();
+  const subject=(FORM.subject||'').toLowerCase();
+  let filteredCareers = (a.top_careers||[])
+    .filter(career=>{
+      const title=(career.title||'').toLowerCase();
+      const field=(career.field||'').toLowerCase();
+      const desc=(career.description||'').toLowerCase();
+      const tx=title+' '+field+' '+desc;
+      if(interest.includes('doctor')||subject.includes('biology')||subject.includes('medical')){
+        return field==='healthcare' || tx.includes('medical')||tx.includes('health')||tx.includes('doctor')||tx.includes('nurse')||tx.includes('pharma')||tx.includes('psychology')||tx.includes('physio');
+      }
+      if(interest.includes('software')||interest.includes('ai')||interest.includes('data')||subject.includes('computer')||subject.includes('artificial intelligence')||subject.includes('data science')){
+        return tx.includes('software')||tx.includes('developer')||tx.includes('ai')||tx.includes('data')||tx.includes('cyber')||tx.includes('cloud')||tx.includes('technology')||tx.includes('program');
+      }
+      if(subject.includes('engineering')||interest.includes('engineer')){
+        return tx.includes('engineering')||tx.includes('engineer')||tx.includes('mechanical')||tx.includes('civil')||tx.includes('electrical')||tx.includes('automobile');
+      }
+      if(subject.includes('commerce')||subject.includes('business')||interest.includes('business')||interest.includes('account')){
+        return tx.includes('business')||tx.includes('finance')||tx.includes('account')||tx.includes('bank')||tx.includes('management')||tx.includes('marketing');
+      }
+      if(interest.includes('design')||subject.includes('design')||subject.includes('fashion')){
+        return tx.includes('design')||tx.includes('graphic')||tx.includes('ui')||tx.includes('ux')||tx.includes('fashion')||tx.includes('animation');
+      }
+      if(interest.includes('teacher')||subject.includes('education')){
+        return field.includes('education') || title.includes('teacher')||title.includes('professor')||tx.includes('education')||tx.includes('teaching');
+      }
+      return true;
+    });
+  if(!filteredCareers.length){
+    filteredCareers = (a.top_careers||[]);
+  }
+  allCareers = filteredCareers.map(c=>({...c,_profession:classifyCareer(c)}));
+  allCareers.sort((x,y)=>(y.match_percent||0)-(x.match_percent||0));
+  render();
+
+  document.getElementById('careerSearch').addEventListener('input',e=>{searchQuery=e.target.value;render();});
+
+  // Skills
+  const ss=document.getElementById('skillsSection');
+  const scores=a.skill_scores||{};
+  window._skillScores=scores;
+  Object.entries(scores).forEach(([skill,val],i)=>{
+    ss.innerHTML+=`<div class="skill-card fade-in"><div class="skill-top"><span class="skill-name">${skill}</span><span class="skill-pct">${val}%</span></div><div class="progress"><div class="progress-bar" id="bar${i}" style="width:0%;background:${SKILL_COLORS[i%SKILL_COLORS.length]};"></div></div></div>`;
+  });
+
+  // Roadmap
+  const rm=document.getElementById('roadmapSection');
+  (a.roadmap||[]).forEach(r=>{
+    const s=document.createElement('div');s.className='step fade-in';
+    s.innerHTML=`<div class="step-num">${String(r.step).padStart(2,'0')}</div><div class="step-badge">Step ${r.step}</div><h4>${r.title}</h4><p>${r.description}</p>`;
+    rm.appendChild(s);
+  });
+
+  // Resources
+  (a.resources||[]).forEach(r=>{
+    document.getElementById('resourcesGrid').innerHTML+=`<div class="resource-card fade-in"><h4>${r.name}</h4><div class="type-badge">${r.type}</div><br><a href="${r.url}" target="_blank" rel="noopener">Visit Resource →</a></div>`;
+  });
+
+  // Tip
+  document.getElementById('tipBox').textContent=`✦ ${a.motivational_tip||''}`;
+
+  // Course panel
+  buildCoursePanel(allCareers);
+
+  window.analysisData={form:FORM,prompt:PROMPT,analysis:a,generated_at:new Date().toISOString()};
+  ['downloadBtn','copyBtn','saveBtn'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=false;});
+
+  document.getElementById('loadingOverlay').style.display='none';
+  document.getElementById('resultsContainer').style.display='block';
+  document.getElementById('actionsBar').style.display='flex';
+  document.getElementById('modeTabBar').style.display='flex';
+}
+
+// Animate skill bars if skills tab is first opened
+document.querySelectorAll('.mode-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{if(tab.textContent.includes('Skill'))animateBars();});
+});
+
+function generateReadableReportText(data) {
+  const form = data?.form || {};
+  const analysis = data?.analysis || {};
+  const lines = [];
+
+  lines.push('CareerCompass Report');
+  lines.push('====================');
+  lines.push('');
+  lines.push(`Student Name: ${form.name || 'N/A'}`);
+  lines.push(`Email: ${form.email || 'N/A'}`);
+  lines.push(`Age: ${form.age || 'N/A'}`);
+  lines.push(`Class/Semester: ${form.semester || 'N/A'}`);
+  lines.push(`Subject: ${form.subject || 'N/A'}`);
+  lines.push(`Interest: ${form.interest || 'N/A'}`);
+  lines.push(`Skill Level: ${form.skill || 'N/A'}`);
+  lines.push(`Generated At: ${data?.generated_at || new Date().toISOString()}`);
+  lines.push('');
+  lines.push('Summary');
+  lines.push('-------');
+  lines.push(analysis.summary || 'No summary available.');
+  lines.push('');
+  lines.push('Recommended Careers');
+  lines.push('-------------------');
+  (analysis.top_careers || []).forEach((career, index) => {
+    lines.push(`${index + 1}. ${career.title || 'Career'}`);
+    lines.push(`   Field: ${career.field || 'N/A'}`);
+    lines.push(`   Match: ${career.match_percent || 'N/A'}%`);
+    lines.push(`   Demand: ${career.demand || 'N/A'}`);
+    lines.push(`   Why it fits: ${career.description || 'N/A'}`);
+    lines.push('');
+  });
+  lines.push('Skill Scores');
+  lines.push('-----------');
+  Object.entries(analysis.skill_scores || {}).forEach(([skill, value]) => {
+    lines.push(`${skill}: ${value}%`);
+  });
+  lines.push('');
+  lines.push('Motivational Tip');
+  lines.push('----------------');
+  lines.push(analysis.motivational_tip || 'No motivational tip available.');
+  lines.push('');
+  lines.push('Roadmap');
+  lines.push('-------');
+  (analysis.roadmap || []).forEach((step) => {
+    lines.push(`${step.step}. ${step.title}`);
+    lines.push(`   ${step.description}`);
+  });
+  lines.push('');
+  lines.push('Resources');
+  lines.push('---------');
+  (analysis.resources || []).forEach((resource, index) => {
+    lines.push(`${index + 1}. ${resource.name || 'Resource'}`);
+    lines.push(`   Type: ${resource.type || 'N/A'}`);
+    lines.push(`   URL: ${resource.url || 'N/A'}`);
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+// Action buttons
+document.getElementById('downloadBtn').addEventListener('click',()=>{
+  if(!window.analysisData)return;
+  const safeName = (FORM.name || 'report').trim().replace(/\s+/g,'_') || 'report';
+  const reportText = generateReadableReportText(window.analysisData);
+  const blob = new Blob([reportText], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `career_report_${safeName}.txt`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+document.getElementById('copyBtn').addEventListener('click',()=>{
+  if(!window.analysisData)return;
+  navigator.clipboard.writeText(window.analysisData.analysis?.summary||'').then(()=>{
+    const btn=document.getElementById('copyBtn');const old=btn.innerHTML;
+    btn.innerHTML='✅ Copied!';setTimeout(()=>btn.innerHTML=old,1600);
+  });
+});
+document.getElementById('saveBtn').addEventListener('click',()=>{
+  if(!window.analysisData)return;
+  const key='career_compass_reports';
+  const ex=JSON.parse(localStorage.getItem(key)||'[]');ex.push(window.analysisData);
+  localStorage.setItem(key,JSON.stringify(ex));
+  const btn=document.getElementById('saveBtn');const old=btn.innerHTML;
+  btn.innerHTML='✓ Saved';setTimeout(()=>btn.innerHTML=old,1400);
+});
+
+fetchAnalysis();
+</script>
+</body>
+</html>
