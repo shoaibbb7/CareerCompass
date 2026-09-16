@@ -7,7 +7,7 @@ CareerCompass is a full-stack Flask web application that helps students discover
 
 ## Features
 
-- **AI Career Analysis** — Powered by Anthropic Claude or OpenAI GPT
+- **AI Career Analysis** — Powered by Anthropic Claude
 - **Career Recommendations** — Matches students to 68+ careers by field, demand, and fit percentage
 - **Skill Assessment** — Visual breakdown of Technical, Communication, Problem Solving, Creativity, and Leadership scores
 - **Personalized Career Roadmap** — 4-step action plan tailored to each student (40+ career-specific roadmaps built in)
