@@ -811,6 +811,23 @@ def get_careers_for_profile(subject, interest):
     return filtered[:8]
 
 
+def add_education_careers(analysis, interest):
+    """
+    The ML model only knows two Education careers (Teacher, Professor) out of 38,
+    so for a student who picks Teacher/Professor the rest of its top-8 is filled
+    with unrelated careers. Top up the list with the Education careers from the
+    curated library so the results actually show the education field.
+    """
+    interest_lower = (interest or "").lower()
+    if "teacher" not in interest_lower and "professor" not in interest_lower:
+        return
+    careers = analysis.setdefault("top_careers", [])
+    existing = {c.get("title", "").strip().lower() for c in careers}
+    for c in ALL_CAREERS:
+        if c["field"] == "Education" and c["title"].strip().lower() not in existing:
+            careers.append(dict(c))
+
+
 # ─── Resource library ──────────────────────────────────────────────────────────
 
 ALL_RESOURCES = [
@@ -1053,6 +1070,7 @@ def api_analyze():
 
         if provider == "ml":
             analysis = ml_model.predict_career_and_skills(form_data, real_skill_scores=real_skill_scores)
+            add_education_careers(analysis, career_interest)
         else:
             text = call_local_api(prompt)
             analysis = json.loads(text)
