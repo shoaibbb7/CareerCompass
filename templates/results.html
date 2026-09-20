@@ -1181,6 +1181,9 @@ function renderResults(a){
       const field=(career.field||'').toLowerCase();
       const desc=(career.description||'').toLowerCase();
       const tx=title+' '+field+' '+desc;
+      if(interest.includes('teacher')||interest.includes('professor')||interest.includes('lecturer')){
+        return field.includes('education') || title.includes('teacher')||title.includes('professor')||tx.includes('education')||tx.includes('teaching');
+      }
       if(interest.includes('doctor')||subject.includes('biology')||subject.includes('medical')){
         return field==='healthcare' || tx.includes('medical')||tx.includes('health')||tx.includes('doctor')||tx.includes('nurse')||tx.includes('pharma')||tx.includes('psychology')||tx.includes('physio');
       }
