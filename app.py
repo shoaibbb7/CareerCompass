@@ -16,6 +16,8 @@ from datetime import datetime
 import pymysql
 pymysql.install_as_MySQLdb()  # lets SQLAlchemy use PyMySQL as if it were MySQLdb
 
+import ml_model
+
 # ─── App & DB setup ────────────────────────────────────────────────────────────
 
 app = Flask(__name__)
@@ -69,7 +71,7 @@ class Analysis(db.Model):
     __tablename__ = "analyses"
     id               = db.Column(db.Integer, primary_key=True, autoincrement=True)
     student_id       = db.Column(db.Integer, db.ForeignKey("students.id"), nullable=False)
-    ai_provider      = db.Column(db.String(20), nullable=False, default="anthropic")
+    ai_provider      = db.Column(db.String(20), nullable=False, default="ml")
     ai_model         = db.Column(db.String(80), nullable=False)
     prompt_text      = db.Column(db.Text().with_variant(mysql.LONGTEXT(), "mysql"), nullable=False)
     response_json    = db.Column(db.Text().with_variant(mysql.LONGTEXT(), "mysql"), nullable=False)
@@ -81,6 +83,44 @@ class Analysis(db.Model):
 
 
 # ─── Validation ────────────────────────────────────────────────────────────────
+
+SKILL_ASSESSMENT_CATEGORIES = {
+    "technical":       "Technical Skills",
+    "communication":   "Communication",
+    "problem_solving": "Problem Solving",
+    "creativity":      "Creativity",
+    "leadership":      "Leadership",
+}
+QUESTIONS_PER_CATEGORY = 3
+
+
+def collect_skill_answers(form):
+    """Reads the 15 Likert (1-5) self-assessment answers from the submitted form.
+    Returns (answers_dict, errors). answers_dict maps 'q_<category>_<n>' -> int.
+    """
+    answers = {}
+    errors = []
+    for key in SKILL_ASSESSMENT_CATEGORIES:
+        for i in range(1, QUESTIONS_PER_CATEGORY + 1):
+            field = f"q_{key}_{i}"
+            raw = form.get(field, "").strip()
+            if raw not in ("1", "2", "3", "4", "5"):
+                errors.append("Please answer every question in the skill self-assessment.")
+                return answers, errors
+            answers[field] = int(raw)
+    return answers, errors
+
+
+def compute_skill_scores(answers):
+    """Turns the 15 raw 1-5 answers into real 0-100 skill scores — a direct,
+    transparent average of the student's own answers, not a model guess."""
+    scores = {}
+    for key, label in SKILL_ASSESSMENT_CATEGORIES.items():
+        vals = [answers[f"q_{key}_{i}"] for i in range(1, QUESTIONS_PER_CATEGORY + 1)]
+        avg = sum(vals) / len(vals)              # 1.0 - 5.0
+        scores[label] = round((avg - 1) / 4 * 100)  # scaled to 0 - 100
+    return scores
+
 
 def validate_form(data):
     errors = []
@@ -111,6 +151,11 @@ def validate_form(data):
 
 
 # ─── AI helpers ────────────────────────────────────────────────────────────────
+# NOTE: This build is fully self-contained. There is NO dependency on the
+# Anthropic API or the OpenAI API anywhere in this file. Career guidance is
+# produced either by the locally trained scikit-learn model (ml_model.py) or,
+# if that hasn't been trained yet, by the deterministic rule-based engine
+# below (call_local_api). No API keys are required to run this app.
 
 def build_ai_prompt(form):
     return f"""You are CareerCompass, an expert student career guidance counselor.
@@ -154,88 +199,25 @@ All skill_scores values must be integers between 40 and 99."""
 
 
 def get_ai_provider():
+    """
+    Chooses which engine generates the guidance.
+    Only two providers exist in this build:
+      - "ml":    the locally trained scikit-learn model (ml_model.py)
+      - "local": a deterministic, rule-based fallback engine (no ML, no API)
+    Anthropic and OpenAI are not used anywhere.
+    """
     requested = os.environ.get("AI_PROVIDER", "").strip().lower()
-    if requested in ("anthropic", "openai", "local"):
+    if requested in ("local", "ml"):
         return requested
-    has_anthropic = bool(os.environ.get("ANTHROPIC_API_KEY", "").strip())
-    has_openai    = bool(os.environ.get("OPENAI_API_KEY", "").strip())
-    if has_openai and not has_anthropic:
-        return "openai"
-    if has_anthropic:
-        return "anthropic"
+    if ml_model.is_model_trained():
+        return "ml"
     return "local"
 
 
 def get_ai_model(provider):
-    if provider == "openai":
-        return os.environ.get("OPENAI_MODEL", "gpt-4o-mini")
-    return os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514")
-
-
-def call_anthropic_api(prompt):
-    import urllib.request
-    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise RuntimeError(
-            "ANTHROPIC_API_KEY not configured. Set ANTHROPIC_API_KEY or switch to "
-            "OpenAI using AI_PROVIDER=openai and OPENAI_API_KEY."
-        )
-    payload = json.dumps({
-        "model": get_ai_model("anthropic"),
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 1500,
-    }).encode()
-    req = urllib.request.Request(
-        "https://api.anthropic.com/v1/messages",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "x-api-key": api_key,
-            "anthropic-version": "2023-06-01",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-    if "content" in result:
-        content = result["content"]
-        if isinstance(content, list):
-            return "".join(b.get("text", "") for b in content if b.get("type") == "text")
-        return str(content)
-    if "choices" in result and result["choices"]:
-        c = result["choices"][0]
-        return c.get("message", {}).get("content", "") if isinstance(c, dict) else c.get("text", "")
-    raise RuntimeError("Unable to parse Anthropic response")
-
-
-def call_openai_api(prompt):
-    import urllib.request
-    api_key = os.environ.get("OPENAI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("OPENAI_API_KEY not configured.")
-    payload = json.dumps({
-        "model": get_ai_model("openai"),
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": 1500,
-        "temperature": 0.7,
-    }).encode()
-    req = urllib.request.Request(
-        "https://api.openai.com/v1/chat/completions",
-        data=payload,
-        headers={
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {api_key}",
-        },
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        result = json.loads(resp.read())
-    choices = result.get("choices", [])
-    if choices:
-        c = choices[0]
-        if isinstance(c, dict):
-            return c.get("message", {}).get("content") or c.get("text", "")
-    raise RuntimeError("Unable to parse OpenAI response")
+    if provider == "ml":
+        return ml_model.get_model_metadata().get("algorithm", "Random Forest Ensemble ML")
+    return "CareerCompass Local Rule-Based Engine"
 
 
 # ─── Career roadmaps (from career_roadmaps.py) ─────────────────────────────────
@@ -977,6 +959,7 @@ def get_resources_for_profile(subject, interest):
 
 
 def call_local_api(prompt):
+    """Deterministic, rule-based fallback (no ML model, no external API)."""
     name_m     = re.search(r"^- Name:\s*(.+)$",             prompt, re.MULTILINE)
     subject_m  = re.search(r"^- Favorite Subject:\s*(.+)$", prompt, re.MULTILINE)
     interest_m = re.search(r"^- Career Interest:\s*(.+)$",  prompt, re.MULTILINE)
@@ -1019,9 +1002,17 @@ def analyze():
         "user_skills": request.form.get("user_skills", "").strip(),
     }
     errors = validate_form(form_data)
+
+    skill_answers, assessment_errors = collect_skill_answers(request.form)
+    errors.extend(assessment_errors)
+
     if errors:
+        # Preserve the assessment answers so the student doesn't have to redo it
+        form_data.update(skill_answers)
         return render_template("index.html", errors=errors, form=form_data)
+
     session["form_data"] = form_data
+    session["skill_scores"] = compute_skill_scores(skill_answers)
     session["ai_prompt"] = build_ai_prompt(form_data)
     return redirect(url_for("results"))
 
@@ -1050,24 +1041,25 @@ def api_analyze():
         return jsonify({"error": "No prompt provided"}), 400
 
     provider = get_ai_provider()
-    start    = __import__("time").time()
+    form_data = session.get("form_data", {})
+    career_interest = form_data.get("interest", "")
+    subject = form_data.get("subject", "")
 
     try:
-        if provider == "openai":
-            text = call_openai_api(prompt)
-        elif provider == "anthropic":
-            text = call_anthropic_api(prompt)
+        # Skill scores come from the student's own 15-question self-assessment,
+        # not from the ML model — computed once in /analyze and stored on the
+        # session so every path below (ML or fallback) uses the real numbers.
+        real_skill_scores = session.get("skill_scores")
+
+        if provider == "ml":
+            analysis = ml_model.predict_career_and_skills(form_data, real_skill_scores=real_skill_scores)
         else:
             text = call_local_api(prompt)
-
-        text     = re.sub(r"```json|```", "", text).strip()
-        analysis = json.loads(text)
+            analysis = json.loads(text)
+            if real_skill_scores:
+                analysis["skill_scores"] = real_skill_scores
 
         # Inject curated career-specific roadmap & resources
-        form_data       = session.get("form_data", {})
-        career_interest = form_data.get("interest", "")
-        subject         = form_data.get("subject", "")
-
         analysis["roadmap"]   = get_career_roadmap(career_interest)
         curated_resources     = get_resources_for_profile(subject, career_interest)
         if curated_resources:
@@ -1082,7 +1074,7 @@ def api_analyze():
             student = Student(
                 full_name       = form_data.get("name", ""),
                 email           = form_data.get("email", ""),
-                age             = int(form_data.get("age", 0)),
+                age             = int(form_data.get("age", 0) or 0),
                 semester        = form_data.get("semester", ""),
                 subject         = form_data.get("subject", ""),
                 skill_level     = form_data.get("skill", "None"),
@@ -1105,11 +1097,42 @@ def api_analyze():
         db.session.add(analysis_row)
         db.session.commit()
 
-        return jsonify({"success": True, "analysis": analysis})
+        return jsonify({"success": True, "analysis": analysis, "provider": provider})
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+
+# ─── AI Model Training Routes ──────────────────────────────────────────────────
+
+
+@app.route("/api/train", methods=["POST"])
+def api_train_model():
+    """Triggers ML training pipeline and returns updated model evaluation metrics."""
+    try:
+        meta = ml_model.train_model_pipeline()
+        return jsonify({"success": True, "metadata": meta})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route("/api/model-status", methods=["GET"])
+def api_model_status():
+    """Returns current model status, accuracy, and metadata."""
+    meta = ml_model.get_model_metadata()
+    return jsonify({"success": True, "metadata": meta})
+
+
+@app.route("/api/add-training-data", methods=["POST"])
+def api_add_training_data():
+    """Appends a new training sample to the dataset."""
+    data = request.get_json(silent=True) or {}
+    try:
+        total = ml_model.add_training_sample(data)
+        return jsonify({"success": True, "total_samples": total})
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 400
 
 
 # ─── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -1117,4 +1140,5 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
+    app.run(debug=True, host="0.0.0.0", port=5000)
     app.run(debug=True, host="0.0.0.0", port=5000)
