@@ -1,4 +1,7 @@
 flask
 flask-sqlalchemy
 pymysql
-gunicorn
+scikit-learn
+pandas
+numpy
+joblib

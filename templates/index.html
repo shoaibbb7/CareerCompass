@@ -256,6 +256,43 @@ select{
   background-repeat:no-repeat;background-position:right 14px center;
 }
 select option{background:#FFF;color:var(--text);}
+
+/* SELF-ASSESSMENT */
+.assessment-wrap{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:36px;margin-top:24px;
+  box-shadow:var(--shadow);
+}
+.assessment-wrap h3{
+  font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);margin-bottom:6px;
+}
+.assessment-sub{color:var(--text-light);font-size:13px;margin-bottom:28px;}
+.assessment-category{margin-bottom:26px;}
+.assessment-category:last-of-type{margin-bottom:0;}
+.assessment-category h4{
+  font-size:13px;font-weight:700;color:var(--accent);
+  text-transform:uppercase;letter-spacing:0.6px;margin-bottom:14px;
+  padding-bottom:8px;border-bottom:1px solid var(--border);
+}
+.likert-q{margin-bottom:16px;}
+.likert-q p{font-size:14px;color:var(--text);margin-bottom:10px;line-height:1.5;}
+.likert-scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+.likert-opt{position:relative;}
+.likert-opt input{position:absolute;opacity:0;width:100%;height:100%;margin:0;cursor:pointer;}
+.likert-opt span{
+  display:block;text-align:center;padding:10px 4px;
+  border:1px solid var(--border);border-radius:10px;
+  font-size:11px;color:var(--text-light);background:var(--bg);
+  transition:0.2s;line-height:1.3;
+}
+.likert-opt input:checked + span{
+  background:var(--accent);color:#FFF;border-color:var(--accent);font-weight:600;
+}
+.likert-opt:hover span{border-color:var(--accent2);}
+@media(max-width:600px){
+  .likert-scale{grid-template-columns:repeat(5,1fr);gap:5px;}
+  .likert-opt span{font-size:9px;padding:8px 2px;}
+}
 .submit-btn{
   width:100%;padding:15px;
   border:none;border-radius:12px;
@@ -577,12 +614,68 @@ footer p{font-size:13px;}
             <label>Your Skills</label>
             <textarea name="user_skills" rows="7" placeholder="e.g. Python, Leadership, Public Speaking, Creativity, Problem Solving…">{{ form.user_skills or '' }}</textarea>
           </div>
-          <button class="submit-btn" type="submit">
-            Analyse My Career ✨
-          </button>
         </div>
 
       </div>
+
+      <!-- REAL SKILL SELF-ASSESSMENT -->
+      <div class="assessment-wrap">
+        <h3>Skill Self-Assessment</h3>
+        <p class="assessment-sub">Answer honestly — these 15 questions are what your skill scores are actually calculated from (1 = Strongly Disagree, 5 = Strongly Agree).</p>
+
+        {% set categories = [
+          ('technical', 'Technical Skills', [
+            'I can confidently apply concepts I learn in class to real projects.',
+            'I enjoy troubleshooting and debugging when something doesn\'t work.',
+            'I regularly build or work on projects outside of assigned coursework.'
+          ]),
+          ('communication', 'Communication', [
+            'I can clearly explain a complex idea to someone unfamiliar with the topic.',
+            'I\'m comfortable presenting my work or ideas in front of a group.',
+            'I actively ask questions and give feedback in group settings.'
+          ]),
+          ('problem_solving', 'Problem Solving', [
+            'When I hit an obstacle, I break it into smaller steps rather than getting stuck.',
+            'I can usually find more than one way to approach a problem.',
+            'I enjoy analytical puzzles or figuring out how things work.'
+          ]),
+          ('creativity', 'Creativity', [
+            'I often come up with original ideas or unconventional approaches.',
+            'I enjoy experimenting with new tools, styles, or methods.',
+            'I can adapt an idea from one field and apply it in another.'
+          ]),
+          ('leadership', 'Leadership', [
+            'Others often look to me to organize or guide group work.',
+            'I\'m comfortable making decisions when a team is stuck.',
+            'I take initiative without being asked.'
+          ])
+        ] %}
+
+        {% for key, label, questions in categories %}
+        <div class="assessment-category">
+          <h4>{{ label }}</h4>
+          {% for q in questions %}
+          {% set qname = 'q_' ~ key ~ '_' ~ loop.index %}
+          <div class="likert-q">
+            <p>{{ q }}</p>
+            <div class="likert-scale">
+              {% for val, opt_label in [('1','Strongly Disagree'),('2','Disagree'),('3','Neutral'),('4','Agree'),('5','Strongly Agree')] %}
+              <label class="likert-opt">
+                <input type="radio" name="{{ qname }}" value="{{ val }}" {% if form[qname] == val %}checked{% endif %} required>
+                <span>{{ opt_label }}</span>
+              </label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+        <button class="submit-btn" type="submit" style="margin-top:8px;">
+          Analyse My Career ✨
+        </button>
+      </div>
+
     </form>
   </div>
 </div>

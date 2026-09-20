@@ -1,0 +1,140 @@
+{
+  "status": "trained",
+  "algorithm": "Random Forest Ensemble (Classifier & Multi-Output Regressor)",
+  "accuracy": 96.12,
+  "top3_accuracy": 99.17,
+  "num_samples": 1801,
+  "train_samples": 1440,
+  "test_samples": 361,
+  "num_classes": 38,
+  "classes": [
+    "AI Engineer",
+    "Aerospace Engineer",
+    "Animator",
+    "Astrophysicist",
+    "Biomedical Engineer",
+    "Business Analyst",
+    "Chartered Accountant",
+    "Chef",
+    "Civil Engineer",
+    "Cloud Engineer",
+    "Cybersecurity Analyst",
+    "Data Scientist",
+    "Dentist",
+    "DevOps Engineer",
+    "Digital Marketer",
+    "Doctor",
+    "Electrical Engineer",
+    "Entrepreneur",
+    "Financial Analyst",
+    "Full-Stack Developer",
+    "Graphic Designer",
+    "IAS Officer",
+    "Investment Banker",
+    "Journalist",
+    "Lawyer",
+    "Mechanical Engineer",
+    "Mobile App Developer",
+    "Pharmacist",
+    "Pilot",
+    "Product Designer",
+    "Product Manager",
+    "Professor",
+    "Psychologist",
+    "Research Scientist",
+    "Robotics Engineer",
+    "Software Developer",
+    "Teacher",
+    "UI/UX Designer"
+  ],
+  "skill_metrics_mae": {
+    "technical_score": 3.48,
+    "communication_score": 4.8,
+    "problem_solving_score": 3.72,
+    "creativity_score": 5.14,
+    "leadership_score": 5.53
+  },
+  "top_features": [
+    {
+      "feature": "career_interest_Animator",
+      "importance": 0.0187
+    },
+    {
+      "feature": "career_interest_Journalist",
+      "importance": 0.0181
+    },
+    {
+      "feature": "career_interest_Lawyer",
+      "importance": 0.018
+    },
+    {
+      "feature": "career_interest_Mechanical Engineer",
+      "importance": 0.0173
+    },
+    {
+      "feature": "career_interest_Software Developer",
+      "importance": 0.0156
+    },
+    {
+      "feature": "career_interest_Biomedical Engineer",
+      "importance": 0.0154
+    },
+    {
+      "feature": "career_interest_Chartered Accountant",
+      "importance": 0.0152
+    },
+    {
+      "feature": "career_interest_DevOps Engineer",
+      "importance": 0.0151
+    },
+    {
+      "feature": "career_interest_Psychologist",
+      "importance": 0.0144
+    },
+    {
+      "feature": "career_interest_Robotics Engineer",
+      "importance": 0.0141
+    },
+    {
+      "feature": "career_interest_Research Scientist",
+      "importance": 0.0123
+    },
+    {
+      "feature": "career_interest_Data Scientist",
+      "importance": 0.0119
+    },
+    {
+      "feature": "career_interest_Entrepreneur",
+      "importance": 0.0119
+    },
+    {
+      "feature": "Skill: microcontrollers",
+      "importance": 0.0117
+    },
+    {
+      "feature": "career_interest_Digital Marketer",
+      "importance": 0.0115
+    },
+    {
+      "feature": "career_interest_Business Analyst",
+      "importance": 0.0115
+    },
+    {
+      "feature": "career_interest_Graphic Designer",
+      "importance": 0.0113
+    },
+    {
+      "feature": "career_interest_Doctor",
+      "importance": 0.0111
+    },
+    {
+      "feature": "career_interest_IAS Officer",
+      "importance": 0.011
+    },
+    {
+      "feature": "career_interest_Mobile App Developer",
+      "importance": 0.0101
+    }
+  ],
+  "trained_at": "2026-09-17 17:25:19"
+}
