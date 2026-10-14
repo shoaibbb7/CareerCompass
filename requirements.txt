@@ -1,6 +1,7 @@
 Flask
 Flask-CORS
 Flask-SQLAlchemy
+PyMySQL
 gunicorn
 joblib
 numpy
