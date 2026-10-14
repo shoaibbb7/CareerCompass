@@ -1,7 +1,0 @@
-flask
-flask-sqlalchemy
-pymysql
-scikit-learn
-pandas
-numpy
-joblib
