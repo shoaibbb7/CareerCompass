@@ -214,7 +214,7 @@ def predict_career_and_skills(profile, real_skill_scores=None):
     fields rather than an actual measurement.
     """
     preprocessor, clf, reg = load_models()
-    
+
     # If model is not trained yet, trigger training now
     if preprocessor is None or clf is None or reg is None:
         train_model_pipeline()
@@ -241,17 +241,17 @@ def predict_career_and_skills(profile, real_skill_scores=None):
     # Normalize match percentages into a realistic 60% - 98% scale
     max_p = probs[top_indices[0]]
     ranked_careers = []
-    
+
     for rank, idx in enumerate(top_indices[:8]):
         c_name = classes[idx]
         raw_prob = probs[idx]
-        
+
         # Scale match percentage
         if max_p > 0:
             rel_score = raw_prob / max_p
         else:
             rel_score = 0.5
-        
+
         match_pct = int(round(62 + (rel_score * 35) - (rank * 2)))
         match_pct = max(55, min(98, match_pct))
 
@@ -296,9 +296,9 @@ def predict_career_and_skills(profile, real_skill_scores=None):
     subject = profile.get("subject", "their academic field")
 
     summary = (
-        f"{student_name} demonstrates strong alignment with {top_career} "
-        f"(confidence match: {top_pct}%) based on their background in {subject} and practical skills. "
-        f"The AI model predicts peak capability in {max(skill_scores, key=skill_scores.get)}."
+        f"Based on {student_name}'s profile in {subject}, the model ranks {top_career} highest "
+        f"(displayed estimate: {top_pct}%). Their highest self-assessment score is in "
+        f"{max(skill_scores, key=skill_scores.get)}."
     )
 
     motivational_tip = (
@@ -334,6 +334,6 @@ def add_training_sample(sample):
     }
     df = pd.DataFrame([row])
     df.to_csv(DATA_PATH, mode="a", header=not os.path.exists(DATA_PATH), index=False)
-    
+
     total = len(pd.read_csv(DATA_PATH))
     return total

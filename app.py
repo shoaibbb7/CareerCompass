@@ -5,10 +5,12 @@ DB models, and routes in one self-contained app.py.
 """
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, session
+import hmac
 import re
 import json
 import os
 import urllib.parse
+import uuid
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.dialects import mysql
 from datetime import datetime
@@ -21,7 +23,27 @@ import ml_model
 # ─── App & DB setup ────────────────────────────────────────────────────────────
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "careercompass-dev-secret-2026")
+is_production = os.environ.get("APP_ENV", "development").strip().lower() == "production"
+secret_key = os.environ.get("SECRET_KEY")
+if is_production and not secret_key:
+    raise RuntimeError("SECRET_KEY must be set when APP_ENV=production.")
+app.config.update(
+    SECRET_KEY=secret_key or "careercompass-local-development-only",
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=is_production,
+)
+
+
+def require_admin_api():
+    """Require a configured API key for endpoints that mutate model data."""
+    expected_key = os.environ.get("ADMIN_API_KEY", "")
+    if not expected_key:
+        return jsonify({"error": "This endpoint is disabled until ADMIN_API_KEY is configured."}), 503
+    provided_key = request.headers.get("X-Admin-API-Key", "")
+    if not hmac.compare_digest(provided_key, expected_key):
+        return jsonify({"error": "Administrator authorization required."}), 401
+    return None
 
 # DB_ENGINE controls whether we connect to MySQL or fall back to local SQLite.
 # The app now defaults to SQLite so it runs out of the box in local development.
@@ -1031,6 +1053,7 @@ def analyze():
     session["form_data"] = form_data
     session["skill_scores"] = compute_skill_scores(skill_answers)
     session["ai_prompt"] = build_ai_prompt(form_data)
+    session["analysis_request_id"] = uuid.uuid4().hex
     return redirect(url_for("results"))
 
 
@@ -1039,30 +1062,48 @@ def results():
     form_data = session.get("form_data")
     if not form_data:
         return redirect(url_for("index"))
-    prompt = session.get("ai_prompt", "")
-    return render_template("results.html", form=form_data, prompt=prompt)
+    return render_template("results.html", form=form_data)
 
 
 @app.route("/reset")
 def reset():
     session.pop("form_data", None)
     session.pop("ai_prompt", None)
+    session.pop("analysis_request_id", None)
     return redirect(url_for("index"))
 
 
 @app.route("/api/analyze", methods=["POST"])
 def api_analyze():
-    data   = request.get_json(silent=True) or {}
-    prompt = data.get("prompt", "")
-    if not prompt:
-        return jsonify({"error": "No prompt provided"}), 400
-
-    provider = get_ai_provider()
     form_data = session.get("form_data", {})
+    prompt = session.get("ai_prompt", "")
+    if not form_data or not prompt:
+        return jsonify({"error": "Submit a profile before requesting career analysis."}), 400
+
+    request_id = session.get("analysis_request_id")
+    stored_prompt = (
+        f"{prompt}\n\n[CareerCompass request id: {request_id}]"
+        if request_id else prompt
+    )
+    provider = get_ai_provider()
     career_interest = form_data.get("interest", "")
     subject = form_data.get("subject", "")
 
     try:
+        student = Student.query.filter_by(email=form_data.get("email", "")).first()
+        if student and request_id:
+            saved_analysis = Analysis.query.filter_by(
+                student_id=student.id,
+                prompt_text=stored_prompt,
+                status="success",
+            ).first()
+            if saved_analysis:
+                return jsonify({
+                    "success": True,
+                    "analysis": json.loads(saved_analysis.response_json),
+                    "provider": saved_analysis.ai_provider,
+                })
+
         # Skill scores come from the student's own 15-question self-assessment,
         # not from the ML model — computed once in /analyze and stored on the
         # session so every path below (ML or fallback) uses the real numbers.
@@ -1087,7 +1128,6 @@ def api_analyze():
             analysis["top_careers"] = get_careers_for_profile(subject, career_interest)
 
         # Save to DB
-        student = Student.query.filter_by(email=form_data.get("email", "")).first()
         if not student:
             student = Student(
                 full_name       = form_data.get("name", ""),
@@ -1106,7 +1146,7 @@ def api_analyze():
             student_id       = student.id,
             ai_provider      = provider,
             ai_model         = get_ai_model(provider),
-            prompt_text      = prompt,
+            prompt_text      = stored_prompt,
             response_json    = json.dumps(analysis),
             summary          = analysis.get("summary", ""),
             motivational_tip = analysis.get("motivational_tip", ""),
@@ -1117,9 +1157,307 @@ def api_analyze():
 
         return jsonify({"success": True, "analysis": analysis, "provider": provider})
 
-    except Exception as e:
+    except Exception:
         db.session.rollback()
-        return jsonify({"error": str(e)}), 500
+        app.logger.exception("Career analysis failed.")
+        return jsonify({"error": "Career analysis could not be completed. Please try again."}), 500
+
+
+# ─── Career Advisor Chatbot Engine ─────────────────────────────────────────────
+
+def generate_chatbot_reply(user_msg: str, context: dict = None) -> tuple:
+    """
+    Intelligent, offline career counseling engine.
+    Analyzes intent and context to provide structured career advice,
+    roadmaps, skill tips, and follow-up prompt chips.
+    """
+    msg = (user_msg or "").strip().lower()
+    ctx = context or {}
+    student_name = ctx.get("name") or session.get("form_data", {}).get("name", "")
+    interest = ctx.get("interest") or session.get("form_data", {}).get("interest", "")
+    subject = ctx.get("subject") or session.get("form_data", {}).get("subject", "")
+    skill_level = ctx.get("skill") or session.get("form_data", {}).get("skill", "")
+
+    # 1. Greetings
+    is_greeting = re.search(
+        r"\b(?:hi|hello|hey)\b|\bwho are you\b|\bwhat can you do\b",
+        msg,
+    )
+    if not msg or is_greeting or msg in {"help", "help me"}:
+        name_greeting = f"Hello {student_name}! " if student_name else "Hello! "
+        reply = (
+            f"{name_greeting}I am your **CareerCompass Advisor**.\n\n"
+            "I can help you with:\n"
+            "• **Step-by-step career roadmaps** for 35+ professions\n"
+            "• **Skill development advice** (technical, problem solving, leadership)\n"
+            "• **Course recommendations** & verified learning resources\n"
+            "• **Career comparisons** (e.g. AI Engineer vs Data Scientist)\n\n"
+            "What would you like to explore today?"
+        )
+        suggestions = [
+            "Roadmap for Software Developer",
+            "AI Engineer vs Data Scientist",
+            "How to improve Problem Solving?",
+            "What careers match my subject?"
+        ]
+        return reply, suggestions
+
+    # 2. Compare Careers
+    if " vs " in msg or "difference between" in msg or "compare" in msg:
+        if "data" in msg and "ai" in msg:
+            reply = (
+                "### AI Engineer vs Data Scientist\n\n"
+                "• **Data Scientist**: Focuses on extracting insights from structured/unstructured data. "
+                "Core tools include Python (Pandas, NumPy), statistics, SQL, data visualization (Tableau, Seaborn), "
+                "and predictive modeling using Scikit-learn.\n\n"
+                "• **AI Engineer**: Focuses on building, optimizing, and deploying deep learning models, neural networks, "
+                "and large language models (LLMs). Core tools include PyTorch, TensorFlow, Hugging Face, FastAPI, and Docker.\n\n"
+                "**Summary**: Data Science is more analytics and statistics-driven; AI Engineering is more software engineering and deep-learning-driven."
+            )
+            suggestions = ["Roadmap for AI Engineer", "Roadmap for Data Scientist", "Top skills for Data Science"]
+            return reply, suggestions
+
+        if ("ui" in msg or "ux" in msg) and "graphic" in msg:
+            reply = (
+                "### UI/UX Designer vs Graphic Designer\n\n"
+                "• **UI/UX Designer**: Focuses on the user journey, wireframing, information architecture, "
+                "usability testing, and interactive prototypes for digital apps using tools like Figma.\n\n"
+                "• **Graphic Designer**: Focuses on visual communication, branding, logos, print media, "
+                "color theory, and marketing assets using Adobe Illustrator and Photoshop.\n\n"
+                "**Summary**: UI/UX focuses on how software functions and feels; Graphic Design focuses on branding and visual aesthetics."
+            )
+            suggestions = ["Roadmap for UI/UX Designer", "Roadmap for Graphic Designer", "Recommended tools for design"]
+            return reply, suggestions
+
+        if "software" in msg and "full" in msg:
+            reply = (
+                "### Software Developer vs Full-Stack Developer\n\n"
+                "• **Software Developer**: May specialize in core systems, desktop software, mobile, or backend microservices.\n"
+                "• **Full-Stack Developer**: Builds end-to-end web applications—handling client UI (React, Vue, HTML/CSS) as well as server APIs and databases (Node.js, Python, PostgreSQL).\n\n"
+                "Both require strong computer science fundamentals, Git, and data structures."
+            )
+            suggestions = ["Roadmap for Software Developer", "Roadmap for Full-Stack Developer", "Best backend languages"]
+            return reply, suggestions
+
+    # 3. Roadmap / Steps requests
+    if any(k in msg for k in ["roadmap", "steps", "how to become", "path for", "guide for"]):
+        target_career = None
+        for c in ALL_CAREERS:
+            if c["title"].lower() in msg:
+                target_career = c["title"]
+                break
+        if not target_career and interest and any(w in msg for w in ["my career", "my roadmap", "this career", "interest"]):
+            target_career = interest
+
+        if not target_career:
+            keyword_to_career = {
+                "software": "Software Developer", "full stack": "Full-Stack Developer",
+                "ai": "AI Engineer", "machine learning": "Machine Learning Engineer",
+                "data": "Data Scientist", "cyber": "Cybersecurity Analyst",
+                "doctor": "Doctor", "nurse": "Nurse", "pharma": "Pharmacist",
+                "mechanical": "Mechanical Engineer", "civil": "Civil Engineer",
+                "ui": "UI/UX Designer", "ux": "UI/UX Designer", "design": "Graphic Designer",
+                "ca": "Chartered Accountant", "account": "Chartered Accountant",
+                "finance": "Financial Analyst", "bank": "Investment Banker",
+                "pilot": "Pilot", "chef": "Chef", "lawyer": "Lawyer", "ias": "IAS Officer"
+            }
+            for kw, title in keyword_to_career.items():
+                if kw in msg:
+                    target_career = title
+                    break
+
+        if target_career and target_career in CAREER_ROADMAPS:
+            roadmap = CAREER_ROADMAPS[target_career]
+            desc = ml_model.CAREER_DESCRIPTIONS.get(target_career, "")
+            demand = ml_model.CAREER_DEMAND_LOOKUP.get(target_career, "High Demand")
+            field = ml_model.CAREER_FIELD_LOOKUP.get(target_career, "General")
+
+            steps_text = "\n\n".join([
+                f"**Step {s['step']}: {s['title']}**\n{s['description']}"
+                for s in roadmap
+            ])
+            reply = (
+                f"### Career Roadmap: {target_career}\n"
+                f"**Field:** {field} | **Market Demand:** {demand}\n\n"
+                f"{desc}\n\n"
+                f"{steps_text}\n\n"
+                "💡 *Pro-tip: Focus on building 2-3 portfolio projects to prove your ability at each stage.*"
+            )
+            suggestions = [
+                f"Recommended courses for {target_career}",
+                f"What skills are needed for {target_career}?",
+                "Compare with another career"
+            ]
+            return reply, suggestions
+
+    # 4. Skill Improvement Guidance
+    if any(k in msg for k in ["skill", "improve", "strengthen", "weak", "practice"]):
+        if any(w in msg for w in ["tech", "coding", "code", "programming"]):
+            reply = (
+                "### How to Strengthen Technical Skills:\n\n"
+                "1. **Code daily**: Dedicate 45-60 minutes daily to hands-on programming rather than passive video watching.\n"
+                "2. **Build real projects**: Create 3 complete projects—a web app, an API service, and a database-backed tool.\n"
+                "3. **Master Git & GitHub**: Push code regularly, write clear commit messages, and document your projects with comprehensive READMEs.\n"
+                "4. **Practice debugging**: When you hit a bug, learn to use debuggers, inspect stack traces, and write unit tests."
+            )
+            suggestions = ["How to improve Problem Solving?", "Roadmap for Software Developer", "Best project ideas"]
+            return reply, suggestions
+
+        if any(w in msg for w in ["problem", "solving", "analytical", "logic"]):
+            reply = (
+                "### How to Improve Problem Solving:\n\n"
+                "1. **Deconstruct problems**: When facing a difficult challenge, break it into 3-4 smaller, manageable sub-problems.\n"
+                "2. **Practice algorithmic puzzles**: Solve 1-2 LeetCode or HackerRank challenges regularly (start with Easy, then Medium).\n"
+                "3. **Study common patterns**: Learn two-pointer, sliding window, recursion, and hash-map techniques.\n"
+                "4. **Think out loud**: Verbalize your thought process before writing any code."
+            )
+            suggestions = ["How to improve Technical Skills?", "How to improve Communication?", "Roadmap for Data Scientist"]
+            return reply, suggestions
+
+        if any(w in msg for w in ["communication", "speak", "present", "explain"]):
+            reply = (
+                "### How to Strengthen Communication:\n\n"
+                "1. **Explain concepts simply**: Practice explaining technical topics (e.g. how a database works) to a friend without using jargon.\n"
+                "2. **Write technical summaries**: Document your project architecture and write short technical guides on LinkedIn or Dev.to.\n"
+                "3. **Present your work**: Volunteer to demo projects in team settings or college clubs.\n"
+                "4. **Active listening**: In group meetings, summarize the other person's point before responding."
+            )
+            suggestions = ["How to improve Leadership?", "How to improve Problem Solving?", "Interview preparation tips"]
+            return reply, suggestions
+
+        if any(w in msg for w in ["leadership", "initiative", "lead", "team"]):
+            reply = (
+                "### How to Strengthen Leadership & Initiative:\n\n"
+                "1. **Take ownership early**: Don't wait to be assigned tasks—proactively identify gaps in group projects and offer solutions.\n"
+                "2. **Facilitate team clarity**: Help teams stay organized by setting sprint goals, dividing tasks fairly, and tracking milestones.\n"
+                "3. **Mentor peers**: Helping others debug their code builds empathy and solidifies your own understanding.\n"
+                "4. **Stay solution-focused**: When roadblocks occur, present 2 potential alternatives rather than just highlighting the issue."
+            )
+            suggestions = ["How to improve Communication?", "How to improve Technical Skills?", "Career roadmaps"]
+            return reply, suggestions
+
+    # 5. Subject to Career Recommendations
+    is_subject_question = any(
+        k in msg for k in ["subject", "degree", "major", "class", "branch", "study"]
+    )
+    is_career_match_question = "career" in msg and any(
+        k in msg for k in ["match", "fit", "suit", "best"]
+    )
+    if is_subject_question or is_career_match_question:
+        detected_subject = None
+        for s in [
+            "Computer Science", "Artificial Intelligence", "Data Science", "Cybersecurity",
+            "Mathematics", "Physics", "Chemistry", "Biology", "Commerce", "Finance",
+            "Economics", "Law", "Psychology", "Design", "Animation", "Engineering"
+        ]:
+            if s.lower() in msg:
+                detected_subject = s
+                break
+        if not detected_subject and subject:
+            detected_subject = subject
+
+        if detected_subject:
+            matched = get_careers_for_profile(detected_subject, "")
+            career_list = "\n".join([
+                f"• **{c['title']}** ({c['field']}) — *{c['demand']}* (Fit: {c['match_percent']}%)"
+                for c in matched[:5]
+            ])
+            reply = (
+                f"### Careers Aligned with {detected_subject}:\n\n"
+                f"{career_list}\n\n"
+                "Would you like to review the roadmap or required skills for any of these paths?"
+            )
+            suggestions = [
+                f"Roadmap for {matched[0]['title']}",
+                f"Roadmap for {matched[1]['title']}" if len(matched) > 1 else "How to prepare?",
+                "How to improve my skills"
+            ]
+            return reply, suggestions
+
+    # 6. Student's Current Profile / Results context
+    if any(k in msg for k in ["my profile", "my results", "my recommendation", "my match", "what should i do"]):
+        if student_name or interest or subject:
+            reply = (
+                f"### Profile Summary for {student_name or 'You'}:\n\n"
+                f"• **Academic Focus:** {subject or 'Not specified'}\n"
+                f"• **Career Interest:** {interest or 'Not specified'}\n"
+                f"• **Coding Experience:** {skill_level or 'Not specified'}\n\n"
+                f"Based on your profile, the primary recommended track is **{interest or 'Software Developer'}**.\n"
+                "Next recommended actions:\n"
+                "1. Follow the stage-by-stage learning roadmap.\n"
+                "2. Complete the curated courses on your Learning Plan tab.\n"
+                "3. Work on portfolio projects to demonstrate practical capability."
+            )
+            suggestions = [
+                f"Roadmap for {interest or 'Software Developer'}",
+                "How to improve Technical Skills?",
+                "Explore curated learning resources"
+            ]
+            return reply, suggestions
+        else:
+            reply = (
+                "You haven't submitted your student profile yet! "
+                "Fill out the profile form on the home page and complete the 15-question skill self-assessment "
+                "to get ML-powered recommendations."
+            )
+            suggestions = ["Roadmap for Software Developer", "Careers in AI", "How to prepare for tech jobs"]
+            return reply, suggestions
+
+    # 7. Specific Career Info Query
+    for c in ALL_CAREERS:
+        if c["title"].lower() in msg:
+            desc = ml_model.CAREER_DESCRIPTIONS.get(c["title"], c["description"])
+            demand = ml_model.CAREER_DEMAND_LOOKUP.get(c["title"], c["demand"])
+            field = ml_model.CAREER_FIELD_LOOKUP.get(c["title"], c["field"])
+            reply = (
+                f"### Career Overview: {c['title']}\n\n"
+                f"• **Discipline:** {field}\n"
+                f"• **Market Demand:** {demand}\n"
+                f"• **Overview:** {desc}\n\n"
+                "Would you like to view the step-by-step roadmap or recommended courses for this career?"
+            )
+            suggestions = [
+                f"Roadmap for {c['title']}",
+                f"Required skills for {c['title']}",
+                "Compare with another career"
+            ]
+            return reply, suggestions
+
+    # 8. General Helpful Fallback
+    reply = (
+        "I'm here to help with all aspects of student career planning!\n\n"
+        "Here are some great questions you can ask me:\n"
+        "• *\"What is the roadmap for Software Developer?\"*\n"
+        "• *\"What is the difference between Data Science and AI?\"*\n"
+        "• *\"How can I improve my technical and problem-solving skills?\"*\n"
+        "• *\"Which careers match Computer Science or Commerce?\"*\n\n"
+        "Feel free to click any suggestion below or type your question!"
+    )
+    suggestions = [
+        "Roadmap for Software Developer",
+        "AI Engineer vs Data Scientist",
+        "How to improve Technical Skills?",
+        "Careers for Computer Science"
+    ]
+    return reply, suggestions
+
+
+@app.route("/api/chat", methods=["POST"])
+def api_chat():
+    """Interactive Career Advisor AI assistant endpoint."""
+    data = request.get_json(silent=True) or {}
+    message = data.get("message", "").strip()
+    context = data.get("context", {})
+
+    if not context.get("name") and "form_data" in session:
+        context.update(session.get("form_data", {}))
+
+    reply, suggestions = generate_chatbot_reply(message, context)
+    return jsonify({
+        "success": True,
+        "reply": reply,
+        "suggestions": suggestions
+    })
 
 
 # ─── AI Model Training Routes ──────────────────────────────────────────────────
@@ -1128,11 +1466,15 @@ def api_analyze():
 @app.route("/api/train", methods=["POST"])
 def api_train_model():
     """Triggers ML training pipeline and returns updated model evaluation metrics."""
+    authorization_error = require_admin_api()
+    if authorization_error:
+        return authorization_error
     try:
         meta = ml_model.train_model_pipeline()
         return jsonify({"success": True, "metadata": meta})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+    except Exception:
+        app.logger.exception("Model training failed.")
+        return jsonify({"success": False, "error": "Model training failed."}), 500
 
 
 @app.route("/api/model-status", methods=["GET"])
@@ -1145,12 +1487,18 @@ def api_model_status():
 @app.route("/api/add-training-data", methods=["POST"])
 def api_add_training_data():
     """Appends a new training sample to the dataset."""
+    authorization_error = require_admin_api()
+    if authorization_error:
+        return authorization_error
     data = request.get_json(silent=True) or {}
     try:
         total = ml_model.add_training_sample(data)
         return jsonify({"success": True, "total_samples": total})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 400
+    except (TypeError, ValueError):
+        return jsonify({"success": False, "error": "Training sample contains invalid values."}), 400
+    except Exception:
+        app.logger.exception("Could not add model training data.")
+        return jsonify({"success": False, "error": "Training data could not be saved."}), 500
 
 
 # ─── Bootstrap ─────────────────────────────────────────────────────────────────
@@ -1158,5 +1506,9 @@ with app.app_context():
     db.create_all()
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    debug_enabled = os.environ.get("FLASK_DEBUG", "").strip() == "1" and not is_production
+    app.run(
+        debug=debug_enabled,
+        host=os.environ.get("HOST", "127.0.0.1"),
+        port=int(os.environ.get("PORT", "5000")),
+    )

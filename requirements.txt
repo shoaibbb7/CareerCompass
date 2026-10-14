@@ -1,8 +1,7 @@
-   flask
-   flask-sqlalchemy
-   pymysql
-   gunicorn
-   scikit-learn==1.8.0
-   pandas
-   numpy
-   joblib
+flask
+flask-sqlalchemy
+pymysql
+scikit-learn
+pandas
+numpy
+joblib

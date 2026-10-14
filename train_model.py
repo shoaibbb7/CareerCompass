@@ -38,7 +38,7 @@ def build_preprocessor():
     """Builds the feature extraction pipeline combining text, categorical, and numerical features."""
     categorical_features = ["favorite_subject", "programming_skill", "semester", "career_interest"]
     numeric_features = ["age"]
-    
+
     preprocessor = ColumnTransformer(
         transformers=[
             ("skills_tfidf", TfidfVectorizer(ngram_range=(1, 2), max_features=350, stop_words="english"), "skills_text"),
@@ -56,7 +56,7 @@ def train_and_evaluate(dataset_path=DATA_PATH, save_artifacts=True):
 
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Loading dataset from {dataset_path}...")
     df = pd.read_csv(dataset_path)
-    
+
     # Fill missing values if any
     df["skills_text"] = df["skills_text"].fillna("")
     df["career_interest"] = df["career_interest"].fillna("General")
@@ -108,7 +108,7 @@ def train_and_evaluate(dataset_path=DATA_PATH, save_artifacts=True):
     y_c_probs = clf.predict_proba(X_test_trans)
 
     accuracy = float(accuracy_score(y_c_test, y_c_pred))
-    
+
     # Top-3 Accuracy
     try:
         top3_acc = float(top_k_accuracy_score(y_c_test, y_c_probs, k=3, labels=clf.classes_))
@@ -167,14 +167,13 @@ def train_and_evaluate(dataset_path=DATA_PATH, save_artifacts=True):
         joblib.dump(preprocessor, os.path.join(MODELS_DIR, "preprocessor.joblib"))
         joblib.dump(clf, os.path.join(MODELS_DIR, "career_classifier.joblib"))
         joblib.dump(reg, os.path.join(MODELS_DIR, "skill_regressor.joblib"))
-        
+
         with open(os.path.join(MODELS_DIR, "model_metadata.json"), "w") as f:
             json.dump(meta, f, indent=2)
-            
+
         print(f"[{datetime.now().strftime('%H:%M:%S')}] Saved all trained models and metadata to: {MODELS_DIR}")
 
     return meta
 
 if __name__ == "__main__":
     train_and_evaluate()
-
