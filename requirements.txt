@@ -1,7 +1,8 @@
-flask
-flask-sqlalchemy
-pymysql
-scikit-learn
-pandas
-numpy
+Flask
+Flask-CORS
+Flask-SQLAlchemy
+gunicorn
 joblib
+numpy
+pandas
+scikit-learn
