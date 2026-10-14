@@ -2498,6 +2498,8 @@ document.getElementById('clearSavedBtn').addEventListener('click', () => {
   }
 });
 
+window.__careerCompassForm = {{ form | tojson }};
+
 // Run inference fetch on page load
 fetchAnalysis();
 </script>
